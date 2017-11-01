@@ -53,5 +53,36 @@ function Exp(settings) {
         });
     }
 
+    var model = settings.model;
+    Object.keys(model).forEach(function(key) {
+        // Store defined value for each key
+        var value = model[key];
+        Object.defineProperty(model, key, {
+            enumerable: true,
+            get: function() { return value },
+            set: function(val) {
+                value = val;
+                var binds = selectorToArray('[exp-bind=' + key + ']');
+                var models = selectorToArray('[exp-model=' + key + ']');
+                binds.concat(models).forEach(function(el) {
+                    if (el.getAttribute('exp-bind')) el.textContent = value;
+                    if (el.getAttribute('exp-model')) el.value = value;
+                });
+            }
+        });
+
+        model[key] = value;
+
+        document.querySelectorAll('[exp-model=' + key + ']').forEach(function(el) {
+            function handler() {
+                model[key] = el.value;
+            };
+            el.addEventListener('keyup', handler);
+            el.addEventListener('change', handler);
+        })
+
+
+    });
+
     return data;
 }
