@@ -1,7 +1,15 @@
 function Exp(settings) {
     var app = document.querySelector(settings.el);
     if (app === null) return {};
+
+    // copy user's initial declaration of variables
     var data = {};
+    if (settings.data) {
+        Object.keys(settings.data).forEach(function(key) {
+            data[key] = settings.data[key];
+        })
+    }
+
     var methods = settings.methods;
 
     // move methods to data (allow use outside html)
@@ -21,12 +29,10 @@ function Exp(settings) {
 
     var inputs = app.querySelectorAll(inputSelectors.join());
 
-    // initialize data and add eventlistener to each input
+    // add eventlistener to each input
     for (var i = 0; i < inputs.length; i++) {
         (function(input) {
             var model = input.getAttribute(modelName);
-            data[model] = input.value;
-
             input.addEventListener("input", function(e) {
                  data[model] = e.target.value;
             });
@@ -38,8 +44,7 @@ function Exp(settings) {
     supportedEvents.forEach(function(event) {
         eventSelectors.push("*[exp-" + event + "]");
     });
-
-
+    
     var events = app.querySelectorAll(eventSelectors.join());
     for (var i = 0; i < events.length; i++) {
         supportedEvents.forEach(function(event) {
@@ -52,35 +57,28 @@ function Exp(settings) {
             })(events[i]);
         });
     }
-
-    var model = settings.model;
-    Object.keys(model).forEach(function(key) {
-        // Store defined value for each key
-        var value = model[key];
-        Object.defineProperty(model, key, {
+    
+    // bind elements to data store
+    Object.keys(data).forEach(function(key) {
+        var value = data[key];
+        // override get, set methods of each key
+        Object.defineProperty(data, key, {
             enumerable: true,
             get: function() { return value },
             set: function(val) {
                 value = val;
-                var binds = selectorToArray('[exp-bind=' + key + ']');
-                var models = selectorToArray('[exp-model=' + key + ']');
+                var binds = Array.prototype.slice.call(document.querySelectorAll('[exp-bind=' + key + ']'));
+                var models = Array.prototype.slice.call(document.querySelectorAll('[exp-model=' + key + ']'));
                 binds.concat(models).forEach(function(el) {
+                    // for exp-bind elements change content according to data store
                     if (el.getAttribute('exp-bind')) el.textContent = value;
+                    // for exp-model change the data store according to element's value
                     if (el.getAttribute('exp-model')) el.value = value;
                 });
             }
         });
 
-        model[key] = value;
-
-        document.querySelectorAll('[exp-model=' + key + ']').forEach(function(el) {
-            function handler() {
-                model[key] = el.value;
-            };
-            el.addEventListener('keyup', handler);
-            el.addEventListener('change', handler);
-        })
-
+        data[key] = value;
 
     });
 
