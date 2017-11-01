@@ -29,10 +29,13 @@ function Exp(settings) {
 
     var inputs = app.querySelectorAll(inputSelectors.join());
 
-    // add eventlistener to each input
+    // initialise data key if not declared by user and add eventlistener to each input
     for (var i = 0; i < inputs.length; i++) {
         (function(input) {
             var model = input.getAttribute(modelName);
+            if (data[model] == null) {
+                data[model] = input.value;
+            }
             input.addEventListener("input", function(e) {
                  data[model] = e.target.value;
             });
