@@ -1,6 +1,3 @@
-import alertMe from './test.js';
-
-alertMe(2);
 class Exp {
     constructor(settings) {
         /* Find application element */
@@ -92,7 +89,6 @@ class Exp {
         })
 
         var events = this.select(selector.join());
-        console.log(events);
 
        events.forEach(el => {
            supportedEvents.forEach(event => {
@@ -100,7 +96,6 @@ class Exp {
                if (method === null || !(method in that.methods)) return;
 
                el.addEventListener(event, function() {
-                   console.log(that.methods)
                    that.methods[method].apply(that.model);
                });
            });
@@ -111,3 +106,5 @@ class Exp {
         return Array.prototype.slice.call(this.app.querySelectorAll(selector));
     }
 }
+
+window.Exp = Exp;
