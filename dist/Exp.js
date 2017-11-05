@@ -103,6 +103,8 @@ var Exp = function () {
     _createClass(Exp, [{
         key: "moveMethods",
         value: function moveMethods() {
+            if (this.methods === undefined) return;
+
             var _iteratorNormalCompletion = true;
             var _didIteratorError = false;
             var _iteratorError = undefined;
@@ -129,6 +131,33 @@ var Exp = function () {
             }
         }
     }, {
+        key: "updateBindings",
+        value: function updateBindings(key, value) {
+            var bindings = this.select("*[exp-bind=\"" + key + "\"]");
+
+            bindings.forEach(function (el) {
+                el.textContent = value;
+            });
+        }
+    }, {
+        key: "updateModels",
+        value: function updateModels(key, value) {
+            var modelBindings = this.select("*[exp-model=\"" + key + "\"]");
+
+            modelBindings.forEach(function (el) {
+                el.value = value;
+            });
+        }
+    }, {
+        key: "updateIfs",
+        value: function updateIfs(key, value) {
+            var expIfs = this.select("*[exp-if=\"" + key + "\"]");
+
+            expIfs.forEach(function (el) {
+                el.style.display = value ? "block" : "none";
+            });
+        }
+    }, {
         key: "watcher",
         value: function watcher(model) {
             var that = this;
@@ -142,23 +171,9 @@ var Exp = function () {
                     },
                     set: function set(val) {
                         value = val;
-                        var bindings = that.select("*[exp-bind=\"" + key + "\"]");
-                        var modelBindings = that.select("*[exp-model=\"" + key + "\"]");
-                        var expIfs = that.select("*[exp-if=\"" + key + "\"]");
-                        bindings.forEach(function (el) {
-                            el.textContent = value;
-                        });
-                        modelBindings.forEach(function (el) {
-                            el.value = value;
-                        });
-
-                        expIfs.forEach(function (el) {
-                            if (value) {
-                                el.style.display = "block";
-                            } else {
-                                el.style.display = "none";
-                            }
-                        });
+                        that.updateBindings(key, value);
+                        that.updateModels(key, value);
+                        that.updateIfs(key, value);
                     }
                 });
 
@@ -195,7 +210,6 @@ var Exp = function () {
             });
 
             var events = this.select(selector.join());
-            console.log(events);
 
             events.forEach(function (el) {
                 supportedEvents.forEach(function (event) {
@@ -203,7 +217,6 @@ var Exp = function () {
                     if (method === null || !(method in that.methods)) return;
 
                     el.addEventListener(event, function () {
-                        console.log(that.methods);
                         that.methods[method].apply(that.model);
                     });
                 });

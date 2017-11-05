@@ -23,9 +23,35 @@ class Exp {
     }
 
     moveMethods() {
+        if (this.methods === undefined) return;
+
         for (var key of Object.keys(this.methods)) {
             this.model[key] = this.methods[key];
         }
+    }
+
+    updateBindings(key, value) {
+        const bindings = this.select(`*[exp-bind="${key}"]`);
+
+        bindings.forEach(el => {
+            el.textContent = value;
+        });
+    }
+
+    updateModels(key, value) {
+        const modelBindings = this.select(`*[exp-model="${key}"]`);
+
+        modelBindings.forEach(el => {
+            el.value = value;
+        });
+    }
+
+    updateIfs(key, value) {
+        const expIfs = this.select(`*[exp-if="${key}"]`);
+
+        expIfs.forEach(el => {
+            el.style.display = (value ? "block" : "none");
+        });
     }
 
     watcher(model) {
@@ -40,23 +66,9 @@ class Exp {
                 },
                 set(val) {
                     value = val;
-                    var bindings = that.select(`*[exp-bind="${key}"]`);
-                    var modelBindings = that.select(`*[exp-model="${key}"]`);
-                    var expIfs = that.select(`*[exp-if="${key}"]`);
-                    bindings.forEach(el => {
-                        el.textContent = value;
-                    });
-                    modelBindings.forEach(el => {
-                        el.value = value;
-                    })
-
-                    expIfs.forEach(el => {
-                        if (value) {
-                            el.style.display = "block";
-                        } else {
-                            el.style.display = "none";
-                        }
-                    })
+                    that.updateBindings(key, value);
+                    that.updateModels(key, value);
+                    that.updateIfs(key, value);
                 }
             });
 

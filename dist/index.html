@@ -1,44 +1,105 @@
 <!DOCTYPE html>
 <html>
  <head>
-    <title>Exp demo</title>
- </head>
- <body>
-    <div id="app">
-        <input type="email" exp-model="email" />
-        <button exp-click="subscribe">Subscribe</button>
-        <div exp-if="success">Dakujeme za vas email: <span exp-bind="emailText"></span></div>
-        <div exp-if="error">Nespravny email!</div>
-    </div>
-    <script src="./Exp.js"></script>
-    <script>
-    function validateEmail(email) {
-        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(email);
+    <title>Exp framework testing</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <style type="text/css">
+    body {
+        font-family: 'Roboto', sans-serif;
     }
 
+    * {
+        font-family: inherit;
+    }
 
-    var app = new Exp({
-        el: '#app',
+    pre {
+        background: #f6f6f6;
+        padding: 10px;
+        font-family: Consolas, monaco, monospace;
+    }
+    </style>
+ </head>
+ <body>
+    <script src="./Exp.js"></script>
+    <div id="app1">
+        <h4>#app1 (model/bind) example</h4>
+        <input type="text" exp-model="message" placeholder="Message" />
+        <p>Message: <span exp-bind="message"></span></p>
+        <pre>
+var app1 = new Exp({
+    el: '#app1',
+    data: {
+        message: '<span exp-bind="message"></span>'
+    }
+});</pre>
+    </div>
+    <script>
+    var app1 = new Exp({
+        el: '#app1',
         data: {
-            email: "",
-            success: false,
-            error: false,
-            submitted: false,
-            emailText: ""
+            message: 'Change me :)'
+        }
+    });
+    </script>
+    <hr>
+    <div id="app2">
+        <h4>#app2 (model/bind/methods) example</h4>
+        <input type="text" exp-model="message" placeholder="Message" />
+        <p>Message: <span exp-bind="message"></span></p>
+        <button exp-click="reverseMessage">Reverse Message</button>
+        <pre>
+var app2 = new Exp({    
+    el: '#app2',
+    data: {
+        message: '<span exp-bind="message"></span>'
+    },
+    methods: {
+        reverseMessage() {
+            this.message = this.message.split('').reverse().join('');
+        }
+    }
+});</pre>
+    </div>
+    <script>
+    var app2 = new Exp({
+        el: '#app2',
+        data: {
+            message: ''
         },
         methods: {
-            subscribe: function() {
-                if (this.submitted) return;
-                this.error = false;
-                if (validateEmail(this.email)) {
-                    this.success = true;
-                    this.emailText = this.email;
-                    this.email = "";
-                    this.submitted = true;
-                } else {
-                    this.error = true;
-                }
+            reverseMessage() {
+                this.message = this.message.split('').reverse().join('');
+            }
+        }
+    });
+    </script>
+    <hr>
+    <div id="app3">
+        <h3>#app3 (methods/if)</h3>
+        <button exp-click="toggleMessage">Toggle Message</button>
+        <div exp-if="visible">My message</div>
+        <pre>
+var app3 = new Exp({
+    el: '#app3',
+    data: {
+        visible: <span exp-bind="visible"></span>
+    },
+    methods: {
+        toggleMessage() {
+            this.visible = (this.visible ? false : true);
+        }
+    }
+});</pre>
+    </div>
+    <script>
+    var app3 = new Exp({
+        el: '#app3',
+        data: {
+            visible: true
+        },
+        methods: {
+            toggleMessage() {
+                this.visible = (this.visible ? false : true);
             }
         }
     });
