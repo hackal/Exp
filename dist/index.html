@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <title>Exp demo</title>
+ </head>
+ <body>
+    <div id="app">
+        <input type="email" exp-model="email" />
+        <button exp-click="subscribe">Subscribe</button>
+        <div exp-if="success">Dakujeme za vas email: <span exp-bind="emailText"></span></div>
+        <div exp-if="error">Nespravny email!</div>
+    </div>
+    <script src="./Exp.js"></script>
+    <script>
+    function validateEmail(email) {
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
+    }
+
+
+    var app = new Exp({
+        el: '#app',
+        data: {
+            email: "",
+            success: false,
+            error: false,
+            submitted: false,
+            emailText: ""
+        },
+        methods: {
+            subscribe: function() {
+                if (this.submitted) return;
+                this.error = false;
+                if (validateEmail(this.email)) {
+                    this.success = true;
+                    this.emailText = this.email;
+                    this.email = "";
+                    this.submitted = true;
+                } else {
+                    this.error = true;
+                }
+            }
+        }
+    });
+    </script>
+ </body>
+</html>
