@@ -108,15 +108,21 @@ var app3 = new Exp({
     <hr>
     <div id="app4">
         <h3>#app4 (exp-for)</h3>
-        <div exp-for="item in items">
-            <span exp-bind="item"></span>
-            <button exp-click="helloWorld">Click me!</button>
+        <div exp-for="name in team">
+            <span exp-bind="name"></span>
+            <button exp-click="showName">Show name</button>
         </div>
         <pre>
 var app4 = new Exp({
     el: '#app4',
     data: {
-        items: ["Lukas", "Adam", "Roman"]
+        team: ["Lukas", "Adam", "Roman"]
+    },
+    methods: {
+        showName(el) {
+            var name = this[el.getAttribute("exp-parent")]
+            alert(name);
+        }
     }
 });
         </pre>
@@ -125,11 +131,12 @@ var app4 = new Exp({
     var app4 = new Exp({
         el: '#app4',
         data: {
-            items: ["Lukas", "Adam", "Roman"]
+            team: ["Lukas", "Adam", "Roman"]
         },
         methods: {
-            helloWorld() {
-                alert("Hello, World!");
+            showName(el) {
+                var name = this[el.getAttribute("exp-parent")]
+                alert(name);
             }
         }
     });

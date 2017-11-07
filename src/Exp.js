@@ -52,6 +52,10 @@ class Exp {
                     binded_var = binded_var.join('.');
                     child.setAttribute('exp-bind', binded_var);
                 };
+                // add exp-parent attribute to all children
+                for (var child of Array.prototype.slice.call(specific_template.querySelectorAll(`*`))) {
+                    child.setAttribute('exp-parent', id);
+                };
                 // append virtual variable to model
                 model[id] = item;
                 el.appendChild(specific_template);
@@ -147,7 +151,7 @@ class Exp {
                if (method === null || !(method in that.methods)) return;
 
                el.addEventListener(event, function() {
-                   that.methods[method].apply(that.model);
+                   that.methods[method].apply(that.model, [el]);
                });
            });
        });
