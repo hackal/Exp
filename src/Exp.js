@@ -9,11 +9,11 @@ class Exp {
         /* init model */
         this.model = {};
 
-        /* init watcher */
-        this.watcher(this.data);
-
         /* init exp-for */
         this.initFor(this.data);
+
+        /* init watcher */
+        this.watcher(this.data);
 
         /* bind all models and methods */
         this.bindModels();
@@ -23,12 +23,6 @@ class Exp {
         this.moveMethods();
 
         return this.model;
-    }
-
-    moveMethods() {
-        for (var key of Object.keys(this.methods)) {
-            this.model[key] = this.methods[key];
-        }
     }
 
     // replicate exp-for elements and populate model with array variables
@@ -65,7 +59,38 @@ class Exp {
         })
     }
 
-    // bind HTML elements to changes in JavaScript model
+    moveMethods() {
+        if (this.methods === undefined) return;
+
+        for (var key of Object.keys(this.methods)) {
+            this.model[key] = this.methods[key];
+        }
+    }
+
+    updateBindings(key, value) {
+        const bindings = this.select(`*[exp-bind="${key}"]`);
+
+        bindings.forEach(el => {
+            el.textContent = value;
+        });
+    }
+
+    updateModels(key, value) {
+        const modelBindings = this.select(`*[exp-model="${key}"]`);
+
+        modelBindings.forEach(el => {
+            el.value = value;
+        });
+    }
+
+    updateIfs(key, value) {
+        const expIfs = this.select(`*[exp-if="${key}"]`);
+
+        expIfs.forEach(el => {
+            el.style.display = (value ? "block" : "none");
+        });
+    }
+
     watcher(model) {
         var that = this;
         Object.keys(model).forEach(key => {
@@ -78,23 +103,9 @@ class Exp {
                 },
                 set(val) {
                     value = val;
-                    var bindings = that.select(`*[exp-bind="${key}"]`);
-                    var modelBindings = that.select(`*[exp-model="${key}"]`);
-                    var expIfs = that.select(`*[exp-if="${key}"]`);
-                    bindings.forEach(el => {
-                        el.textContent = value;
-                    });
-                    modelBindings.forEach(el => {
-                        el.value = value;
-                    })
-
-                    expIfs.forEach(el => {
-                        if (value) {
-                            el.style.display = "block";
-                        } else {
-                            el.style.display = "none";
-                        }
-                    })
+                    that.updateBindings(key, value);
+                    that.updateModels(key, value);
+                    that.updateIfs(key, value);
                 }
             });
 
@@ -129,22 +140,22 @@ class Exp {
         })
 
         var events = this.select(selector.join());
-        console.log(events);
 
-        events.forEach(el => {
-            supportedEvents.forEach(event => {
-                var method = el.getAttribute('exp-' + event);
-                if (method === null || !(method in that.methods)) return;
+       events.forEach(el => {
+           supportedEvents.forEach(event => {
+               var method = el.getAttribute('exp-' + event);
+               if (method === null || !(method in that.methods)) return;
 
-                el.addEventListener(event, function() {
-                    console.log(that.methods)
-                    that.methods[method].apply(that.model);
-                });
-            });
-        });
+               el.addEventListener(event, function() {
+                   that.methods[method].apply(that.model);
+               });
+           });
+       });
     }
 
     select(selector) {
         return Array.prototype.slice.call(this.app.querySelectorAll(selector));
     }
 }
+
+window.Exp = Exp;
