@@ -43,8 +43,15 @@ class Exp {
                 let child_template = template.cloneNode(true);
                 // set exp-bind of child elements to reference model
                 for (var child of Array.prototype.slice.call(child_template.querySelectorAll(`*[exp-bind^="${local_var}"`))) {
-                    let binded_var = that.model[referenced_var][index];
-                    child.textContent = binded_var;
+                    // parse . delimiter if exp-for is array of dictionaries
+                    if (child.getAttribute("exp-bind").includes('.')) {
+                        const referenced_key = child.getAttribute("exp-bind").split('.')[1];
+                        let binded_var = that.model[referenced_var][index][referenced_key];
+                        child.textContent = binded_var;
+                    } else {
+                        let binded_var = that.model[referenced_var][index];
+                        child.textContent = binded_var;
+                    }
                 };
                 // append child to exp-for
                 el.appendChild(child_template);

@@ -108,20 +108,24 @@ var app3 = new Exp({
     <hr>
     <div id="app4">
         <h3>#app4 (exp-for)</h3>
-        <div exp-for="name in team">
-            <span exp-bind="name"></span>
+        <div exp-for="person in team">
+            <span>Name: </span>
+            <span exp-bind="person.name"></span>
+            <span>, Age: </span>
+            <span exp-bind="person.age"></span>
             <button exp-click="showName">Show name</button>
         </div>
         <pre>
 var app4 = new Exp({
     el: '#app4',
     data: {
-        team: ["Lukas", "Adam", "Roman"]
+        team: [{"name": "Lukas", "age": 20}, {"name": "Adam", "age": 21}, {"name": "Roman", "age": 21}]
     },
     methods: {
         showName(el) {
-            var name = el.parentNode.getElementsByTagName("span")[0].innerHTML;
-            alert("My name is: " + name);
+            var name = el.parentNode.getElementsByTagName("span")[1].innerHTML;
+            var age = el.parentNode.getElementsByTagName("span")[3].innerHTML;
+            alert("This guy is " + name + " and he is " + age + " years old.");
         }
     }
 });
@@ -131,12 +135,13 @@ var app4 = new Exp({
     var app4 = new Exp({
         el: '#app4',
         data: {
-            team: ["Lukas", "Adam", "Roman"]
+            team: [{"name": "Lukas", "age": 20}, {"name": "Adam", "age": 21}, {"name": "Roman", "age": 21}]
         },
         methods: {
             showName(el) {
-                var name = el.parentNode.getElementsByTagName("span")[0].innerHTML;
-                alert("My name is: " + name);
+                var name = el.parentNode.getElementsByTagName("span")[1].innerHTML;
+                var age = el.parentNode.getElementsByTagName("span")[3].innerHTML;
+                alert("This guy is " + name + " and he is " + age + " years old.");
             }
         }
     });
