@@ -120,8 +120,8 @@ var app4 = new Exp({
     },
     methods: {
         showName(el) {
-            var name = this[el.getAttribute("exp-parent")]
-            alert(name);
+            var name = el.parentNode.getElementsByTagName("span")[0].innerHTML;
+            alert("My name is: " + name);
         }
     }
 });
