@@ -62,6 +62,9 @@ class Exp {
     }
 
     updateBindings(key, value) {
+        if (Array.isArray(value) || typeof(value) == "object") {
+            return;
+        }
         const bindings = this.select(`*[exp-bind="${key}"]`);
 
         bindings.forEach(el => {
@@ -70,6 +73,9 @@ class Exp {
     }
 
     updateModels(key, value) {
+        if (Array.isArray(value) || typeof(value) == "object") {
+            return;
+        }
         const modelBindings = this.select(`*[exp-model="${key}"]`);
 
         modelBindings.forEach(el => {
