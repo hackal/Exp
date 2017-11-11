@@ -9,11 +9,11 @@ class Exp {
         /* init model */
         this.model = {};
 
-        /* init exp-for */
-        this.initFor(this.data);
-
         /* init watcher */
         this.watcher(this.data);
+        
+        /* render exp-for elements */
+        this.renderExpFor();
 
         /* bind all models and methods */
         this.bindModels();
@@ -25,40 +25,29 @@ class Exp {
         return this.model;
     }
 
-    // replicate exp-for elements and populate model with array variables
-    initFor(model) {
+    // render exp-for elements and populate children with values from model
+    renderExpFor() {
         var that = this;
-        var fors = that.select(`[exp-for]`);
-        fors.map(el => {
+        var for_elements = that.select(`[exp-for]`);
+        for_elements.map(el => {
             // tokens = ["item", "in", "items"]
             const tokens = el.getAttribute('exp-for').split(' ');
             let template = document.createElement("div");
             while (el.hasChildNodes()) template.appendChild(el.firstChild);
             const local_var = tokens[0];
-            const parent_var = tokens[2];
+            const referenced_var = tokens[2];
             if (tokens[1] != 'in') return;
             // for each item in array add another replica
-            model[parent_var].map((item, index) => {
-                // populating template with specific virtual variables
-                let specific_template = template.cloneNode(true);
-                // TODO -> has to be a unique id
-                const id = parent_var + "_" + local_var + "_" + index;
-                specific_template.id = id;
-                // set exp-bind of child elements to reference virtual variable
-                for (var child of Array.prototype.slice.call(specific_template.querySelectorAll(`*[exp-bind^="${local_var}"`))) {
-                    let binded_var = child.getAttribute('exp-bind');
-                    binded_var = binded_var.split('.');
-                    binded_var[0] = id;
-                    binded_var = binded_var.join('.');
-                    child.setAttribute('exp-bind', binded_var);
+            that.model[referenced_var].map((item, index) => {
+                // copy template to replicate
+                let child_template = template.cloneNode(true);
+                // set exp-bind of child elements to reference model
+                for (var child of Array.prototype.slice.call(child_template.querySelectorAll(`*[exp-bind^="${local_var}"`))) {
+                    let binded_var = that.model[referenced_var][index];
+                    child.textContent = binded_var;
                 };
-                // add exp-parent attribute to all children
-                for (var child of Array.prototype.slice.call(specific_template.querySelectorAll(`*`))) {
-                    child.setAttribute('exp-parent', id);
-                };
-                // append virtual variable to model
-                model[id] = item;
-                el.appendChild(specific_template);
+                // append child to exp-for
+                el.appendChild(child_template);
             })
         })
     }
@@ -153,7 +142,7 @@ class Exp {
                if (method === null || !(method in that.methods)) return;
 
                el.addEventListener(event, function() {
-                   that.methods[method].apply(that.model, [event]);
+                   that.methods[method].apply(that.model, [el]);
                });
            });
        });
