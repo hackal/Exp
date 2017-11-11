@@ -63,6 +63,7 @@ class Exp {
         })
     }
 
+    // proxy for outside use
     moveMethods() {
         if (this.methods === undefined) return;
 
@@ -95,6 +96,7 @@ class Exp {
         });
     }
 
+    // bind HTML to changes in JavaScript model
     watcher(model) {
         var that = this;
         Object.keys(model).forEach(key => {
@@ -151,7 +153,7 @@ class Exp {
                if (method === null || !(method in that.methods)) return;
 
                el.addEventListener(event, function() {
-                   that.methods[method].apply(that.model, [el]);
+                   that.methods[method].apply(that.model, [event]);
                });
            });
        });
