@@ -104,5 +104,104 @@ var app3 = new Exp({
         }
     });
     </script>
+    <hr>
+    <div id="app4">
+        <h3>#app4 (checkbox)</h3>
+        <input type="checkbox" exp-model="status">
+        <div exp-bind="status"></div>
+    </div>
+    <script>
+    var app4 = new Exp({
+        el: '#app4',
+        data: {
+            status: true
+        }
+    });
+    </script>
+    <hr>
+    <div id="app5">
+        <h3>#app5 (radio)</h3>
+        <input type="radio" exp-model="picked" name="adam" value="c">
+        <input type="radio" exp-model="picked" name="adam" value="b">
+        <input type="radio" exp-model="picked" name="adam" value="q">
+        <div exp-bind="picked"></div>
+    </div>
+    <script>
+    var app5 = new Exp({
+        el: '#app5',
+        data: {
+            picked: "q"
+        },
+        mounted: function() {
+            console.log('kek')
+        }
+    });
+    </script>
+    <hr>
+    <div id="app6">
+        <h3>#app6 (textarea)</h3>
+        <textarea exp-model="text"></textarea>
+        <div exp-bind="text"></div>
+    </div>
+    <script>
+    var app6 = new Exp({
+        el: '#app6',
+        data: {
+            text: "test"
+        }
+    });
+    </script>
+    <hr>
+    <div id="app7">
+        <h3>#app7 (select)</h3>
+        <select exp-model="selected">
+            <option value="25">25</option>
+            <option value="35">35</option>
+            <option value="45">45</option>
+        </select>
+        <div exp-bind="selected"></div>
+    </div>
+    <script>
+    var app6 = new Exp({
+        el: '#app7',
+        data: {
+            selected: "25"
+        }
+    });
+    </script>
+
+    <hr>
+    <div id="app8">
+    </div>
+    <script>
+    var app7 = new Exp({
+        // el: '#app8',
+        attatch: '#app8',
+        html: `
+        <div class="content">
+            asd
+            <input type="text" class="content">
+        </div>`,
+        style: `
+        input {
+            color: red;
+        }
+        input {
+            display: block;
+            width: 100%;
+        }
+        .content {
+            color: red;
+        }
+`,
+        scoped: true,
+        data: {
+            selected: "25"
+        }
+    });
+    </script>
+
+    <p>kek</p>
+
  </body>
 </html>
