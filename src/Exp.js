@@ -31,6 +31,9 @@ class Exp {
         /* move methods to model for outside use */
         this.moveMethods();
 
+        if (settings.backdrop) this.addBackdrop();
+        if (settings.position) this.moveToPosition(settings.position);
+        
         this.loaded();
         return this.model;
     }
@@ -74,7 +77,61 @@ class Exp {
             }
         }
 
-        this.model.removeBanner = this.removeBanner.bind(this, this.app);
+        this.methods.removeBanner = this.removeBanner.bind(this, this.app);
+    }
+
+    moveToPosition(position) {
+        if (typeof position === "object") {
+            this.setStyleFromObject(position, this.app.firstChild);
+        } else {
+            this.setPositionFromString(position, this.app.firstChild);
+        }
+
+        this.setStyleFromObject({ "position": "fixed" }, this.app.firstChild)
+    }
+
+    setStyleFromObject(object, el) {
+        for (var property in object) {
+            el.style[property] = object[property];
+        }
+    }
+
+    setPositionFromString(position, el) {
+        const offset = "20px";
+        const positionStyles = {
+            middle: {
+                "left": "50%",
+                "top": "50%",
+                "transform": "translate(-50%,-50%)"
+            }
+        }
+        let positions = position.split(' ');
+        positions.forEach(pos => {
+            if (pos in positionStyles) {
+                this.setStyleFromObject(positionStyles[pos], el);
+            } else {
+                let styleObj = {}
+                styleObj[pos] = offset
+                this.setStyleFromObject(styleObj, el);
+            }
+        });
+    }
+
+    addBackdrop() {
+        const backdropStyle = {
+            "position": "fixed",
+            "top": "0",
+            "left": "0",
+            "width": "100vw",
+            "height": "100vh",
+            "z-index": "999999",
+            "background": "rgba(0,0,0,0.7)"
+        }
+        let backdrop = document.createElement('div');
+        this.setStyleFromObject(backdropStyle, backdrop);
+        this.app.style['position'] = "relative";
+        this.app.firstChild.style["z-index"] = "9999999";
+        this.app.appendChild(backdrop);
     }
 
     loaded() {
@@ -117,11 +174,14 @@ class Exp {
     }
 
     generateScopedRule(rule) {
-        let attr = `exp-${this.getUuid()}`;
-        let selector = rule.selectorText;
-        this.addAttributes(selector, attr);
+        let selectors = rule.selectorText.split(',');
+        let selectorsText = selectors.map(selector => {
+            let attr = `exp-${this.getUuid()}`;
+            this.addAttributes(selector.trim(), attr);
+            return `${selector}[${attr}]`;
+        });
 
-        return `${selector}[${attr}] { ${rule.style.cssText} }`;
+        return `${selectorsText.join()} { ${rule.style.cssText} }`;
     }
 
     moveMethods() {
@@ -229,8 +289,8 @@ class Exp {
                var method = el.getAttribute('exp-' + event);
                if (method === null || !(method in that.methods)) return;
 
-               el.addEventListener(event, function() {
-                   that.methods[method].apply(that.model, [event]);
+               el.addEventListener(event, function(e) {
+                   that.methods[method].apply(that.model, [e]);
                });
            });
        });
