@@ -87,6 +87,13 @@ class Exp {
                     }
                 });
                 return;
+            } else if (this.trigger.type = "onaction"){
+                var el = this.trigger.element || null;
+                var action = this.trigger.action || "click";
+                el.addEventListener(action, function(){
+                    render(self);
+                });
+                return;
             } else {
                 /* if incorrect type of trigger is given do not render at all */
                 return;
