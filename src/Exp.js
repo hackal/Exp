@@ -57,6 +57,8 @@ class Exp {
         this.loaded();
         this.addAnimationClass();
         this.removeAnimationClass();
+        this.bindClose();
+        
         return this.model;
     }
 
@@ -136,13 +138,13 @@ class Exp {
     /* handle POSITION option */
     moveToPosition(position) {
         if (typeof position === "object") {
-            this.setStyleFromObject(position, this.app.firstChild);
+            this.setStyleFromObject(position, this.app);
         } else {
-            this.setPositionFromString(position, this.app.firstChild);
+            this.setPositionFromString(position, this.app);
         }
 
         /* this is bug, what if element is inserted to page? can't use fixed */
-        this.setStyleFromObject({ "position": "fixed" }, this.app.firstChild)
+        this.setStyleFromObject({ "position": "fixed" }, this.app)
     }
 
     /* add inline style to element */
@@ -370,7 +372,7 @@ class Exp {
 
         var events = this.select(selector.join());
 
-       events.forEach(el => {
+        events.forEach(el => {
            supportedEvents.forEach(event => {
                var method = el.getAttribute('exp-' + event);
                if (method === null || !(method in that.methods)) return;
@@ -380,6 +382,17 @@ class Exp {
                });
            });
        });
+    }
+
+    bindClose() {
+        let selector = `[exp-close]`;
+        var elements = this.select(selector);
+        console.log(elements)
+        elements.forEach(el => {
+            el.addEventListener('click', (e) => {
+                this.removeBanner();
+            });
+        })
     }
 
     addAnimationClass(className = "exponea-animate") {
