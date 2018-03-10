@@ -16,6 +16,26 @@ class Exp {
         this.methods = settings.methods || null;
         this.mounted = settings.mounted || null;
 
+        /* pass banner context */
+        if (settings.context !== undefined) {
+            this.context = settings.context;
+        } else {
+            this.context = null;
+        }
+        /* pass banner sdk */
+        if (settings.sdk !== undefined) {
+            this.sdk = settings.sdk;
+        } else {
+            this.sdk = null;
+        }
+
+        /* tracking by default false */
+        if (settings.tracking !== undefined) {
+            this.tracking = true;
+        } else {
+            this.tracking = settings.tracking;
+        }
+
         /* init model */
         this.model = {};
 
@@ -96,6 +116,21 @@ class Exp {
         this.methods.removeBanner = this.removeBanner.bind(this, this.app);
     }
 
+    getEventProperties(action, interactive) {
+        if (this.context === null) return;
+        return { 
+            action: action,
+            banner_id: this.context.banner_id,
+            banner_name: this.context.banner_name,
+            banner_type: this.context.banner_type,
+            variant_id: this.context.variant_id,
+            variant_name: this.context.variant_name,
+            interaction: interactive !== false ? true : false,
+            location: window.location.href,
+            path: window.location.pathname
+        };
+    }
+
     /* handle POSITION option */
     moveToPosition(position) {
         if (typeof position === "object") {
@@ -157,12 +192,20 @@ class Exp {
 
     /* call MOUNTED lifecycle hook */
     loaded() {
+        /* track 'show' if tracking is set to true */
+        if (this.tracking && this.sdk !== null && this.context !== null) {
+            this.sdk.track('banner', this.getEventProperties('show', false));
+        }
         if (this.mounted !== null) this.mounted.call(this.model);
     }
 
     /* remove banner */
     removeBanner() {
         this.app.parentNode.removeChild(this.app);
+         /* track 'close' if tracking is set to true */
+        if (this.tracking && this.sdk !== null && this.context !== null) {
+            this.sdk.track('banner', this.getEventProperties('close'));
+        }
     }
 
     /* method for inserting stylesheet */
