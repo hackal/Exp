@@ -36,26 +36,62 @@ class Exp {
             this.tracking = settings.tracking;
         }
 
+        this.trigger = settings.trigger || null;
+
         /* init model */
         this.model = {};
 
-        this.init();
+        /* method for rendering the banner */
+        var render = function(self) {
+            self.init();
+            /* init watcher */
+            self.watcher(self.data);
+            /* bind all models and methods */
+            self.bindModels();
+            self.bindMethods();
+            /* move methods to model for outside use */
+            self.moveMethods();
+            if (settings.backdrop) self.addBackdrop();
+            if (settings.position) self.moveToPosition(settings.position);
+            self.loaded();
+            return self.model;
+        }
 
-        /* init watcher */
-        this.watcher(this.data);
+        /* if trigger exists, render based on the type of the trigger */
+        if (this.trigger !== null) {
+            if (this.trigger.type == "onready") {
+                /* renders banner once page's elements are rendered */
+                const delay = this.trigger.delay || 0;
+                var self = this;
+                window.addEventListener('load', function() {
+                    setTimeout(() => {
+                        render(self);
+                    }, delay);
+                });
+                return;
+            } else if (this.trigger.type == "onexit") {
+                /* renders banner if user wants to leave the page */
+                const delay = this.trigger.delay || 0;
+                window.__exp_triggered = false;
+                var self = this;
+                document.body.addEventListener("mouseleave", function (e) {
+                    /* check window was left */
+                    if (e.offsetY - window.scrollY < 0 && !window.__exp_triggered) {
+                        window.__exp_triggered = true;
+                        setTimeout(() => {
+                            render(self);
+                        }, delay);
+                    }
+                });
+                return;
+            } else {
+                /* if incorrect type of trigger is given do not render at all */
+                return;
+            }
+        }
 
-        /* bind all models and methods */
-        this.bindModels();
-        this.bindMethods();
+        return render(this);
 
-        /* move methods to model for outside use */
-        this.moveMethods();
-
-        if (settings.backdrop) this.addBackdrop();
-        if (settings.position) this.moveToPosition(settings.position);
-        
-        this.loaded();
-        return this.model;
     }
 
     /* initialization logic */
