@@ -3,7 +3,7 @@ class Exp {
         /* Find application element */
         this.el = settings.el || null;
         this.app = null;
-        this.attatch = settings.attatch || null;
+        this.attach = settings.attach || null;
 
         /* Exp handling HTMl */
         this.html = settings.html || null;
@@ -40,7 +40,7 @@ class Exp {
 
     /* initialization logic */
     init() {
-        /* handles HTML, EL, APP, ATTATCH settings */
+        /* handles HTML, EL, APP, attach settings */
         if (this.el !== null) {
             /* find element in place */
             this.app = document.querySelector(this.el);
@@ -50,8 +50,8 @@ class Exp {
             el.innerHTML = this.html.trim();
 
             /* append the element to target or to body */
-            if (this.attatch !== null) {
-                this.app = document.querySelector(this.attatch).appendChild(el.firstChild).parentNode;
+            if (this.attach !== null) {
+                this.app = document.querySelector(this.attach).appendChild(el.firstChild).parentNode;
             } else {
                 this.app = document.body.appendChild(el);
             }
