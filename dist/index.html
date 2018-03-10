@@ -26,6 +26,7 @@
     <script src="./Exp.js"></script>
     <script>
     var banner = new Exp({
+        tracking: false,
         html: `
             <div class="banner">
                 <h1>test</h1>
@@ -49,7 +50,7 @@
         `,
         scoped: true,
         backdrop: true,
-        trigget: {
+        trigger: {
             type: "exit",
             delay: 0
         },
