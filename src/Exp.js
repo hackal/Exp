@@ -5,6 +5,8 @@ class Exp {
         this.app = null;
         this.attach = settings.attach || null;
 
+        this.recommendations = settings.recommendations || {};
+
         /* Exp handling HTMl */
         this.html = settings.html || null;
 
@@ -48,7 +50,7 @@ class Exp {
 
         /* method for rendering the banner */
         var render = function(self) {
-            if(!this.control_group){
+            if(!self.control_group){
                 self.init();
                 /* init watcher */
                 self.watcher(self.data);
@@ -61,10 +63,10 @@ class Exp {
                 if (settings.position) self.moveToPosition(settings.position);
             }
             self.loaded();
-            if(!this.control_group){
+            if(!self.control_group){
                 self.addAnimationClass();
-                self.removeAnimationClass();
                 self.bindFors();
+                self.loadRcm();
                 self.bindClose();
             }
             return self.model;
@@ -83,7 +85,6 @@ class Exp {
                 });
                 return;
             } else if (this.trigger.type == "onexit") {
-                console.log(123)
                 /* renders banner if user wants to leave the page */
                 const delay = this.trigger.delay || 0;
                 window.__exp_triggered = false;
@@ -91,7 +92,6 @@ class Exp {
                 document.body.addEventListener("mouseleave", function (e) {
                     /* check window was left */
                     if (e.offsetY - window.scrollY < 0 && !window.__exp_triggered) {
-                        console.log('kk')
                         window.__exp_triggered = true;
                         setTimeout(() => {
                             render(self);
@@ -383,7 +383,25 @@ class Exp {
     }
 
     loadRcm() {
-        
+    	const keys = Object.keys(this.recommendations);
+        for (let i = 0; i < keys.length; i++) {
+            if (this.model[keys[i]]) {
+                var options = {
+                    recommendationId: this.recommendations[keys[i]].id,
+                    size: this.recommendations[keys[i]].total,
+                    callback: data => {
+                        if (data && data.length > 0) {
+                            data.forEach(item => {
+                                this.model[keys[i]].push(item)
+                            })
+                        }
+                    },
+                    fillWithRandom: true
+                };
+                
+                this.sdk.getRecommendation(options);
+            }
+        }
     }
 
     bindFors() {
@@ -402,7 +420,6 @@ class Exp {
                 this.model[arrayName] = [];
                 this.overridePush(this.model[arrayName], arrayName, key);
             }
-            console.log(key, arrayName);
         })
     }
 
