@@ -44,6 +44,11 @@ class Exp {
 
         this.trigger = settings.trigger || null;
         this.control_group = settings.control_group || false;
+        if (settings.branded === undefined) {
+            this.branded = true;
+        } else {
+            this.branded = settings.branded;
+        }
 
         /* init model */
         this.model = {};
@@ -64,6 +69,7 @@ class Exp {
             }
             self.loaded();
             if(!self.control_group){
+                if(self.branded) self.addBranding();
                 self.addAnimationClass();
                 self.bindFors();
                 self.loadRcm();
@@ -398,7 +404,7 @@ class Exp {
                     },
                     fillWithRandom: true
                 };
-                
+
                 this.sdk.getRecommendation(options);
             }
         }
@@ -554,6 +560,13 @@ class Exp {
         } else {
             this.app.className = this.app.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
         }
+    }
+
+    addBranding(){
+        var branding = document.createElement('object');
+        this.app.appendChild(branding);
+        branding.innerHTML = '<a href="https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral" class="exponea-branding" target="_blank">Powered by Exponea</a>';
+        this.addStyle('.exponea-branding{font-size:11px;position:absolute;color:#000;opacity:.6;right:5px;bottom:5px;padding-top:10px;text-decoration:none}.exponea-branding:hover{opacity:.9}');
     }
 
     /**
