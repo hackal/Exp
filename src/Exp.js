@@ -37,26 +37,31 @@ class Exp {
         }
 
         this.trigger = settings.trigger || null;
+        this.control_group = settings.control_group || false;
 
         /* init model */
         this.model = {};
 
         /* method for rendering the banner */
         var render = function(self) {
-            self.init();
-            /* init watcher */
-            self.watcher(self.data);
-            /* bind all models and methods */
-            self.bindModels();
-            self.bindMethods();
-            /* move methods to model for outside use */
-            self.moveMethods();
-            if (settings.backdrop) self.addBackdrop();
-            if (settings.position) self.moveToPosition(settings.position);
+            if(!this.control_group){
+                self.init();
+                /* init watcher */
+                self.watcher(self.data);
+                /* bind all models and methods */
+                self.bindModels();
+                self.bindMethods();
+                /* move methods to model for outside use */
+                self.moveMethods();
+                if (settings.backdrop) self.addBackdrop();
+                if (settings.position) self.moveToPosition(settings.position);
+            }
             self.loaded();
-            self.addAnimationClass();
-            self.removeAnimationClass();
-            self.bindClose();
+            if(!this.control_group){
+                self.addAnimationClass();
+                self.removeAnimationClass();
+                self.bindClose();
+            }
             return self.model;
         }
 
@@ -86,6 +91,18 @@ class Exp {
                         }, delay);
                     }
                 });
+                return;
+            } else if (this.trigger.type = "onaction"){
+                var el = this.trigger.element;
+                var action = this.trigger.action || "click";
+                const delay = this.trigger.delay || 0;
+                if(el){
+                    el.addEventListener(action, function(){
+                        setTimeout(() => {
+                            render(self);
+                        }, delay);
+                    });
+                }
                 return;
             } else {
                 /* if incorrect type of trigger is given do not render at all */
@@ -235,7 +252,7 @@ class Exp {
         if (this.tracking && this.sdk !== null && this.context !== null) {
             this.sdk.track('banner', this.getEventProperties('show', false));
         }
-        if (this.mounted !== null) this.mounted.call(this.model);
+        if (this.mounted !== null && !this.control_group) this.mounted.call(this.model);
     }
 
     /* remove banner */
