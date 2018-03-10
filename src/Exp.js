@@ -13,7 +13,7 @@ class Exp {
         this.scoped = settings.scoped || false;
 
         this.data = settings.data;
-        this.methods = settings.methods || null;
+        this.methods = settings.methods || {};
         this.mounted = settings.mounted || null;
 
         /* pass banner context */
@@ -54,6 +54,9 @@ class Exp {
             if (settings.backdrop) self.addBackdrop();
             if (settings.position) self.moveToPosition(settings.position);
             self.loaded();
+            self.addAnimationClass();
+            self.removeAnimationClass();
+            self.bindClose();
             return self.model;
         }
 
@@ -107,9 +110,9 @@ class Exp {
 
             /* append the element to target or to body */
             if (this.attach !== null) {
-                this.app = document.querySelector(this.attach).appendChild(el.firstChild).parentNode;
+                this.app = document.querySelector(this.attach).appendChild(el.firstChild);
             } else {
-                this.app = document.body.appendChild(el);
+                this.app = document.body.appendChild(el.firstChild);
             }
         }
 
@@ -170,13 +173,13 @@ class Exp {
     /* handle POSITION option */
     moveToPosition(position) {
         if (typeof position === "object") {
-            this.setStyleFromObject(position, this.app.firstChild);
+            this.setStyleFromObject(position, this.app);
         } else {
-            this.setPositionFromString(position, this.app.firstChild);
+            this.setPositionFromString(position, this.app);
         }
 
         /* this is bug, what if element is inserted to page? can't use fixed */
-        this.setStyleFromObject({ "position": "fixed" }, this.app.firstChild)
+        this.setStyleFromObject({ "position": "fixed" }, this.app)
     }
 
     /* add inline style to element */
@@ -404,7 +407,7 @@ class Exp {
 
         var events = this.select(selector.join());
 
-       events.forEach(el => {
+        events.forEach(el => {
            supportedEvents.forEach(event => {
                var method = el.getAttribute('exp-' + event);
                if (method === null || !(method in that.methods)) return;
@@ -416,6 +419,33 @@ class Exp {
        });
     }
 
+    bindClose() {
+        let selector = `[exp-close]`;
+        var elements = this.select(selector);
+        console.log(elements)
+        elements.forEach(el => {
+            el.addEventListener('click', (e) => {
+                this.removeBanner();
+            });
+        })
+    }
+
+    addAnimationClass(className = "exponea-animate") {
+        if (this.app.classList) {
+            this.app.classList.add(className);
+        } else {
+            this.app.className += ' ' + className;
+        }
+    }
+
+    removeAnimationClass(className = "exponea-animate") {
+        if (this.app.classList) {
+            this.app.classList.remove(className);
+        } else {
+            this.app.className = this.app.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+        }
+    }
+
     /**
      * helper selecor functions
      */
@@ -424,7 +454,12 @@ class Exp {
     }
 
     select(selector) {
-        return this.listify(this.app.querySelectorAll(selector));
+        var elements = this.listify(this.app.querySelectorAll(selector));
+        if (this.app.matches(selector)) {
+            elements.push(this.app);
+        }
+
+        return elements;
     }
 }
 
