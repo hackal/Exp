@@ -13,7 +13,7 @@ class Exp {
         this.scoped = settings.scoped || false;
 
         this.data = settings.data;
-        this.methods = settings.methods || null;
+        this.methods = settings.methods || {};
         this.mounted = settings.mounted || null;
 
         /* pass banner context */
@@ -55,6 +55,8 @@ class Exp {
         if (settings.position) this.moveToPosition(settings.position);
         
         this.loaded();
+        this.addAnimationClass();
+        this.removeAnimationClass();
         return this.model;
     }
 
@@ -71,9 +73,9 @@ class Exp {
 
             /* append the element to target or to body */
             if (this.attach !== null) {
-                this.app = document.querySelector(this.attach).appendChild(el.firstChild).parentNode;
+                this.app = document.querySelector(this.attach).appendChild(el.firstChild);
             } else {
-                this.app = document.body.appendChild(el);
+                this.app = document.body.appendChild(el.firstChild);
             }
         }
 
@@ -380,6 +382,22 @@ class Exp {
        });
     }
 
+    addAnimationClass(className = "exponea-animate") {
+        if (this.app.classList) {
+            this.app.classList.add(className);
+        } else {
+            this.app.className += ' ' + className;
+        }
+    }
+
+    removeAnimationClass(className = "exponea-animate") {
+        if (this.app.classList) {
+            this.app.classList.remove(className);
+        } else {
+            this.app.className = this.app.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+        }
+    }
+
     /**
      * helper selecor functions
      */
@@ -388,7 +406,12 @@ class Exp {
     }
 
     select(selector) {
-        return this.listify(this.app.querySelectorAll(selector));
+        var elements = this.listify(this.app.querySelectorAll(selector));
+        if (this.app.matches(selector)) {
+            elements.push(this.app);
+        }
+
+        return elements;
     }
 }
 
