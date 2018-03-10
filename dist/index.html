@@ -10,6 +10,9 @@
 
     * {
         font-family: inherit;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
     }
 
     pre {
@@ -21,88 +24,53 @@
  </head>
  <body>
     <script src="./Exp.js"></script>
-    <div id="app1">
-        <h4>#app1 (model/bind) example</h4>
-        <input type="text" exp-model="message" placeholder="Message" />
-        <p>Message: <span exp-bind="message"></span></p>
-        <pre>
-var app1 = new Exp({
-    el: '#app1',
-    data: {
-        message: '<span exp-bind="message"></span>'
-    }
-});</pre>
-    </div>
     <script>
-    var app1 = new Exp({
-        el: '#app1',
+    var banner = new Exp({
+        tracking: false,
+        html: `
+            <div class="banner">
+                <h1>test</h1>
+                <input type="text" exp-model="inputText">
+                <input type="text" exp-model="inputText">
+                <p exp-bind="inputText"></p>
+                <a href="#" exp-click="removeBanner">close</a>
+            </div>
+        `,
+        style: `
+            .banner {
+                background-color: #ffd500;
+                width: 500px;
+                padding: 20px;
+            }
+            input, textarea {
+                font-size: 20px;
+                padding: 5px 10px;
+                border: 0;
+            }
+        `,
+        scoped: true,
+        backdrop: true,
+        trigger: {
+            type: "exit",
+            delay: 0
+        },
+        position: {
+            top: "20px",
+            left: "0px"   
+        },
         data: {
-            message: 'Change me :)'
-        }
-    });
-    </script>
-    <hr>
-    <div id="app2">
-        <h4>#app2 (model/bind/methods) example</h4>
-        <input type="text" exp-model="message" placeholder="Message" />
-        <p>Message: <span exp-bind="message"></span></p>
-        <button exp-click="reverseMessage">Reverse Message</button>
-        <pre>
-var app2 = new Exp({    
-    el: '#app2',
-    data: {
-        message: '<span exp-bind="message"></span>'
-    },
-    methods: {
-        reverseMessage() {
-            this.message = this.message.split('').reverse().join('');
-        }
-    }
-});</pre>
-    </div>
-    <script>
-    var app2 = new Exp({
-        el: '#app2',
-        data: {
-            message: ''
+            inputText: "",
+            inputText2: "",
         },
         methods: {
-            reverseMessage() {
-                this.message = this.message.split('').reverse().join('');
-            }
-        }
-    });
-    </script>
-    <hr>
-    <div id="app3">
-        <h3>#app3 (methods/if)</h3>
-        <button exp-click="toggleMessage">Toggle Message</button>
-        <div exp-if="visible">My message</div>
-        <pre>
-var app3 = new Exp({
-    el: '#app3',
-    data: {
-        visible: <span exp-bind="visible"></span>
-    },
-    methods: {
-        toggleMessage() {
-            this.visible = (this.visible ? false : true);
-        }
-    }
-});</pre>
-    </div>
-    <script>
-    var app3 = new Exp({
-        el: '#app3',
-        data: {
-            visible: true
+
         },
-        methods: {
-            toggleMessage() {
-                this.visible = (this.visible ? false : true);
-            }
+        mounted: function() {
+
         }
     });
     </script>
  </body>
 </html>
+
+
