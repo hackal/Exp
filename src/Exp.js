@@ -16,6 +16,10 @@ class Exp {
         this.methods = settings.methods || {};
         this.mounted = settings.mounted || null;
 
+        this.__storage = {
+            loopDefinitions: {}
+        };
+
         /* pass banner context */
         if (settings.context !== undefined) {
             this.context = settings.context;
@@ -60,6 +64,7 @@ class Exp {
             if(!this.control_group){
                 self.addAnimationClass();
                 self.removeAnimationClass();
+                self.bindFors();
                 self.bindClose();
             }
             return self.model;
@@ -78,6 +83,7 @@ class Exp {
                 });
                 return;
             } else if (this.trigger.type == "onexit") {
+                console.log(123)
                 /* renders banner if user wants to leave the page */
                 const delay = this.trigger.delay || 0;
                 window.__exp_triggered = false;
@@ -85,6 +91,7 @@ class Exp {
                 document.body.addEventListener("mouseleave", function (e) {
                     /* check window was left */
                     if (e.offsetY - window.scrollY < 0 && !window.__exp_triggered) {
+                        console.log('kk')
                         window.__exp_triggered = true;
                         setTimeout(() => {
                             render(self);
@@ -329,6 +336,76 @@ class Exp {
         });
     }
 
+    /* cool hack */
+    overridePush(array, arrayName, key) {
+        let self = this;
+        array.push = (_ => {
+            var original = Array.prototype.push;
+            return function() {
+                const ret = original.apply(this, arguments);
+                self.updateFors(arrayName, key, arguments[0]);
+                return ret;
+            };
+        })();
+    }
+
+    updateFors(arrayName, key) {
+        const expFors = this.select(`[exp-for="${key} in ${arrayName}"]`);
+        expFors.forEach(expFor => {
+            expFor.innerHTML = '';
+        });
+        this.model[arrayName].forEach(item => {
+            const template = this.__storage.loopDefinitions[arrayName].cloneNode(true);
+            const bindings = this.select(`[exp-bind]`, template);
+            bindings.forEach(bind => {
+                const val = bind.getAttribute('exp-bind');
+                if (val.indexOf('.') == -1) {
+                    bind.textContent = item;
+                } else {
+                    const keys = val.split('.');
+                    
+                    function rec(items, dict) {
+                        if (items.length == 1) return dict[items[0]];
+                        else return rec(items.slice(1), dict[items[0]]);
+                    }
+                    var value = rec(keys.slice(1), item);
+
+                    bind.textContent = value
+                }
+            });
+
+            expFors.forEach(expFor => {
+                let el = document.createElement('div');
+                el.innerHTML = template.innerHTML.trim();
+                expFor.appendChild(el);
+            });
+        });
+    }
+
+    loadRcm() {
+        
+    }
+
+    bindFors() {
+        const expFors = this.select(`[exp-for], [exp-rcm]`);
+        expFors.forEach(expFor => {
+            let key = expFor.getAttribute('exp-for').split(' ')[0];
+            let arrayName = expFor.getAttribute('exp-for').split(' ')[2];
+
+            this.__storage.loopDefinitions[arrayName] = expFor.cloneNode(true);
+            expFor.innerHTML = '';
+
+            if (this.model[arrayName]) {
+                this.overridePush(this.model[arrayName], arrayName, key);
+                this.updateFors(arrayName, key);
+            } else {
+                this.model[arrayName] = [];
+                this.overridePush(this.model[arrayName], arrayName, key);
+            }
+            console.log(key, arrayName);
+        })
+    }
+
     /* method for updating input exp-models */
     updateModels(key, value) {
         const modelBindings = this.select(`*[exp-model="${key}"]`);
@@ -439,7 +516,6 @@ class Exp {
     bindClose() {
         let selector = `[exp-close]`;
         var elements = this.select(selector);
-        console.log(elements)
         elements.forEach(el => {
             el.addEventListener('click', (e) => {
                 this.removeBanner();
@@ -470,10 +546,10 @@ class Exp {
         return Array.prototype.slice.call(list);
     }
 
-    select(selector) {
-        var elements = this.listify(this.app.querySelectorAll(selector));
-        if (this.app.matches(selector)) {
-            elements.push(this.app);
+    select(selector, scope = this.app) {
+        var elements = this.listify(scope.querySelectorAll(selector));
+        if (scope.matches(selector)) {
+            elements.push(scope);
         }
 
         return elements;
