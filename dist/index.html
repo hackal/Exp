@@ -46,10 +46,11 @@
         html: `
             <div class="banner">
                 <div exp-for="product in products">
-                    <span exp-bind="product.name"></span>
+                    <a exp-href="product.item.url" exp-bind="product.item.url"></a>
                 </div>
-                <h1>test</h1>
-                <input type="text" exp-model="inputText">
+                <a exp-href="link">asd</a>
+                <h1 exp-bind="link">test</h1>
+                <input type="text" exp-model="link">
                 <input type="text" exp-model="inputText">
                 <p exp-bind="inputText"></p>
                 <a href="#" exp-close>close</a>
@@ -70,8 +71,21 @@
         `,
         scoped: true,
         data: {
-            inputText: ""
+            inputText: "",
+            products: [],
+            link: 'https://google.com',
+            products: [
+                { item: {
+                        url: 'google.com'
+                    }
+                }
+        ]
         },
+        mounted() {
+            // for (var i = 0; i < 1000; i++) {
+            //     this.products.push(i)
+            // }
+        }
     });
     </script>
  </body>
