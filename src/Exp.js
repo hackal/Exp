@@ -6,12 +6,6 @@ class Exp {
         this.attach = settings.attach || null;
 
         this.recommendations = settings.recommendations || {};
-
-        /* Exp handling HTMl */
-        this.html = settings.html || null;
-
-        /* Exp handling styling */
-        this.style = settings.style || null;
         this.scoped = settings.scoped || false;
 
         this.data = settings.data;
@@ -22,18 +16,47 @@ class Exp {
             loopDefinitions: {}
         };
 
-        /* pass banner context */
-        if (settings.context !== undefined) {
-            this.context = settings.context;
-        } else {
-            this.context = null;
-        }
-        /* pass banner sdk */
-        if (settings.sdk !== undefined) {
-            this.sdk = settings.sdk;
-        } else {
-            this.sdk = null;
-        }
+        this.html = (_ => {
+            if (settings.html !== undefined) return settings.html;
+            if (settings.context !== undefined) {
+                if (settings.context.html !== undefined) return settings.context.html;
+            }
+
+            return null;
+        })();
+
+        this.style = (_ => {
+            if (settings.style !== undefined) return settings.style;
+            if (settings.context !== undefined) {
+                if (settings.context.style !== undefined) return settings.context.style;
+            }
+
+            return null;
+        })();
+
+        this.sdk = (_ => {
+            if (settings.context !== undefined) {
+                if (settings.context.sdk !== undefined) return settings.context.sdk;
+            }
+
+            return null;
+        })();
+
+        this.context = (_ => {
+            if (settings.context !== undefined) {
+                if (settings.context.data !== undefined) return settings.context.data;
+            }
+
+            return null;
+        })();
+
+        this.inPreview = (_ => {
+            if (settings.context !== undefined) {
+                if (settings.context.inPreview !== undefined) return settings.context.inPreview;
+            }
+
+            return false;
+        })();
 
         /* tracking by default false */
         if (settings.tracking === undefined) {
