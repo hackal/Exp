@@ -80,7 +80,7 @@ class Exp {
         }
 
         /* if trigger exists, render based on the type of the trigger */
-        if (this.trigger !== null) {
+        if (this.trigger !== null && (this.context !== null && this.context.inPreview === false)) {
             if (this.trigger.type == "onready") {
                 /* renders banner once page's elements are rendered */
                 const delay = this.trigger.delay || 0;
