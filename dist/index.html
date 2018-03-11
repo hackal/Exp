@@ -46,7 +46,7 @@
         html: `
             <div class="banner">
                 <div exp-for="product in products">
-                    <a exp-href="product.item.url" exp-bind="product.item.url"></a>
+                    <a exp-href="product" exp-bind="product" exp-click="ok"></a>
                 </div>
                 <a exp-href="link">asd</a>
                 <h1 exp-bind="link">test</h1>
@@ -74,12 +74,14 @@
             inputText: "",
             products: [],
             link: 'https://google.com',
-            products: [
-                { item: {
-                        url: 'google.com'
-                    }
-                }
-        ]
+            products: ['google.com']
+        },
+        methods: {
+            ok(e) {
+                console.log(1)
+                e.preventDefault();
+                alert(1)
+            }
         },
         mounted() {
             // for (var i = 0; i < 1000; i++) {

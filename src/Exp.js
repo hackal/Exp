@@ -49,7 +49,7 @@ class Exp {
         } else {
             this.branded = settings.branded;
         }
-
+        this.supportedAttributes = ["src", "href", "alt"];
         /* init model */
         this.model = {};
 
@@ -125,7 +125,6 @@ class Exp {
         }
 
         return render(this);
-
     }
 
     /* initialization logic */
@@ -356,63 +355,55 @@ class Exp {
         })();
     }
 
-    updateFors(arrayName, key) {
-        const expFors = this.select(`[exp-for="${key} in ${arrayName}"]`);
-        expFors.forEach(expFor => {
-            expFor.innerHTML = '';
+    rec(items, dict) {
+        if (items.length == 1) return dict[items[0]];
+        else return rec(items.slice(1), dict[items[0]]);
+    }
+
+    updateFors(arrayName, key, item) {
+        const template = this.__storage.loopDefinitions[arrayName].cloneNode(true);
+        
+        let attrSelector = this.supportedAttributes.map(attr => {
+            return `*[exp-${attr}]`;
         });
-        this.model[arrayName].forEach(item => {
-            const template = this.__storage.loopDefinitions[arrayName].cloneNode(true);
-            const bindings = this.select(`[exp-bind]`, template);
-            let supportedAttributes = ["src", "href", "alt"];
-            let selector = supportedAttributes.map(attr => {
-                return `*[exp-${attr}]`;
-            });
-            const elements = this.select(selector.join(), template);
 
-            elements.forEach(el => {
-                supportedAttributes.forEach(attr => {
-                    var val = el.getAttribute('exp-' + attr);
-                    if (val === null) return;
+        const expFors = this.select(`[exp-for="${key} in ${arrayName}"]`);
+        const expAttrs = this.select(attrSelector.join(), template);
+        const expBinds = this.select(`[exp-bind]`, template);
 
-                    if (val.indexOf('.') == -1) {
-                        el[attr] = item;
-                    } else {
-                        const keys = val.split('.');
+        expAttrs.forEach(el => {
+            this.supportedAttributes.forEach(attr => {
+                const val = el.getAttribute('exp-' + attr);
+                if (val === null) return;
 
-                        function rec(items, dict) {
-                            if (items.length == 1) return dict[items[0]];
-                            else return rec(items.slice(1), dict[items[0]]);
-                        }
-                        var value = rec(keys.slice(1), item);
-
-                        el[attr] = value;
-                    };
-                });
-            });
-
-            bindings.forEach(bind => {
-                const val = bind.getAttribute('exp-bind');
                 if (val.indexOf('.') == -1) {
-                    bind.textContent = item;
+                    el[attr] = item;
                 } else {
                     const keys = val.split('.');
-                    
-                    function rec(items, dict) {
-                        if (items.length == 1) return dict[items[0]];
-                        else return rec(items.slice(1), dict[items[0]]);
-                    }
-                    var value = rec(keys.slice(1), item);
-
-                    bind.textContent = value
-                }
+                    const value = this.rec(keys.slice(1), item);
+                    el[attr] = value;
+                };
             });
+        });
 
-            expFors.forEach(expFor => {
-                let el = document.createElement('div');
-                el.innerHTML = template.innerHTML;
-                expFor.appendChild(el);
-            });
+        expBinds.forEach(el => {
+            const val = el.getAttribute('exp-bind');
+            if (val.indexOf('.') == -1) {
+                el.textContent = item;
+            } else {
+                const keys = val.split('.');
+                var value = this.rec(keys.slice(1), item);
+                el.textContent = value
+            }
+        });
+
+        this.bindMethods(template);
+
+        expFors.forEach(expFor => {
+            let el = document.createElement('div');
+            el.innerHTML = template.innerHTML;
+            expFor.appendChild(el);
+            this.bindMethods(el);
         });
     }
 
@@ -449,7 +440,9 @@ class Exp {
 
             if (this.model[arrayName]) {
                 this.overridePush(this.model[arrayName], arrayName, key);
-                this.updateFors(arrayName, key);
+                this.model[arrayName].forEach(item => {
+                    this.updateFors(arrayName, key, item);
+                })
             } else {
                 this.model[arrayName] = [];
                 this.overridePush(this.model[arrayName], arrayName, key);
@@ -544,15 +537,14 @@ class Exp {
     }
 
     updateAttributes(key, value) {
-        let supportedAttributes = ["src", "href", "alt"];
-        let selector = supportedAttributes.map(attr => {
+        let selector = this.supportedAttributes.map(attr => {
             return `*[exp-${attr}="${key}"]`;
         });
         const that = this;
         const elements = this.select(selector.join());
 
         elements.forEach(el => {
-            supportedAttributes.forEach(attr => {
+            this.supportedAttributes.forEach(attr => {
                 var val = el.getAttribute('exp-' + attr);
                 if (val === null || !(val in that.model)) return;
                 
@@ -562,14 +554,13 @@ class Exp {
     }
 
     bindAttributes() {
-        let supportedAttributes = ["src", "href", "alt"];
-        let selector = supportedAttributes.map(attr => {
+        let selector = this.supportedAttributes.map(attr => {
             return `*[exp-${attr}]`;
         });
         const that = this;
         const elements = this.select(selector.join());
         elements.forEach(el => {
-            supportedAttributes.forEach(attr => {
+            this.supportedAttributes.forEach(attr => {
                 var val = el.getAttribute('exp-' + attr);
                 if (val === null || !(val in that.model)) return;
                 
@@ -579,14 +570,16 @@ class Exp {
     }
 
     /* initial bindings of methods */
-    bindMethods() {
+    bindMethods(template = undefined) {
+        console.log(template)
         var that = this;
         let supportedEvents = ["click", "submit", "input", "hover"];
         let selector = supportedEvents.map(event => {
             return `*[exp-${event}]`;
-        })
+        });
 
-        var events = this.select(selector.join());
+        var events = this.select(selector.join(), template);
+        console.log(events)
 
         events.forEach(el => {
            supportedEvents.forEach(event => {
