@@ -15,7 +15,6 @@ class Exp {
         this.__storage = {
             loopDefinitions: {}
         };
-        this.backdrop = null;
 
         this.html = (_ => {
             if (settings.html !== undefined) return settings.html;
@@ -68,8 +67,8 @@ class Exp {
 
         this.trigger = settings.trigger || null;
         this.control_group = settings.control_group || false;
-        if (settings.branded === undefined) {
-            this.branded = true;
+        if (settings.branded === undefined || (settings.branded !== "black" && settings.branded !== "white")) {
+            this.branded = 'black';
         } else {
             this.branded = settings.branded;
         }
@@ -88,12 +87,16 @@ class Exp {
                 self.bindMethods();
                 /* move methods to model for outside use */
                 self.moveMethods();
-                if (settings.backdrop) self.addBackdrop(settings.backdrop);
+                if (settings.backdrop) self.addBackdrop();
                 if (settings.position) self.moveToPosition(settings.position);
             }
             self.loaded();
             if(!self.control_group){
-                if(self.branded) self.addBranding();
+                if(self.branded === "white"){
+                    self.addBranding("white");
+                } else if(self.branded){
+                    self.addBranding("black");
+                }
                 self.addAnimationClass();
                 self.bindAttributes();
                 self.bindFors();
@@ -104,7 +107,7 @@ class Exp {
         }
 
         /* if trigger exists, render based on the type of the trigger */
-        if (this.trigger !== null && !this.inPreview) {
+        if (this.trigger !== null && (this.context !== null && this.context.inPreview === false)) {
             if (this.trigger.type == "onready") {
                 /* renders banner once page's elements are rendered */
                 const delay = this.trigger.delay || 0;
@@ -268,8 +271,8 @@ class Exp {
     }
 
     /* handle BACKDROP optioin */
-    addBackdrop(style) {
-        let backdropStyle = {
+    addBackdrop() {
+        const backdropStyle = {
             "position": "fixed",
             "top": "0",
             "left": "0",
@@ -278,21 +281,17 @@ class Exp {
             "z-index": "999999",
             "background": "rgba(0,0,0,0.7)"
         }
-
-        for (var key of Object.keys(style)) {
-            backdropStyle[key] = style[key];
-        }
-
         let backdrop = document.createElement('div');
         this.setStyleFromObject(backdropStyle, backdrop);
-        this.app.parentNode.style['position'] = "relative";
-        this.app.style["z-index"] = "9999999";
-        this.backdrop = this.app.parentNode.appendChild(backdrop);
+        this.app.style['position'] = "relative";
+        this.app.firstChild.style["z-index"] = "9999999";
+        this.app.appendChild(backdrop);
     }
 
     /* call MOUNTED lifecycle hook */
     loaded() {
         /* track 'show' if tracking is set to true */
+        console.log()
         if (this.tracking && this.sdk !== null && this.context !== null) {
             this.sdk.track('banner', this.getEventProperties('show', false));
         }
@@ -302,8 +301,6 @@ class Exp {
     /* remove banner */
     removeBanner() {
         this.app.parentNode.removeChild(this.app);
-        if (this.backdrop !== null) this.backdrop.parentNode.removeChild(this.backdrop);
-
          /* track 'close' if tracking is set to true */
         if (this.tracking && this.sdk !== null && this.context !== null) {
             this.sdk.track('banner', this.getEventProperties('close'));
@@ -650,11 +647,12 @@ class Exp {
         }
     }
 
-    addBranding(){
+    addBranding(color){
         var branding = document.createElement('object');
+        var uuid = this.getUuid();
         this.app.appendChild(branding);
-        branding.innerHTML = '<a href="https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral" class="exponea-branding" target="_blank">Powered by Exponea</a>';
-        this.addStyle('.exponea-branding{font-size:11px;position:absolute;color:#000;opacity:.6;right:5px;bottom:5px;padding-top:10px;text-decoration:none}.exponea-branding:hover{opacity:.9}');
+        branding.innerHTML = '<a href="https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral" ' + uuid + ' target="_blank">Powered by Exponea</a>';
+        this.addStyle('[' + uuid + ']{font-size:11px;position:absolute;color:' + color + ';opacity:.6;right:5px;bottom:5px;padding-top:0;text-decoration:none}[' + uuid + ']:hover{opacity:.9}');
     }
 
     /**
