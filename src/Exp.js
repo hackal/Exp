@@ -36,7 +36,7 @@ class Exp {
         }
 
         /* tracking by default false */
-        if (settings.tracking !== undefined) {
+        if (settings.tracking === undefined) {
             this.tracking = true;
         } else {
             this.tracking = settings.tracking;
@@ -52,7 +52,6 @@ class Exp {
         this.supportedAttributes = ["src", "href", "alt"];
         /* init model */
         this.model = {};
-        this.model.sdk = this.sdk;
 
         /* method for rendering the banner */
         var render = function(self) {
@@ -185,6 +184,7 @@ class Exp {
 
         /* register removeBanner method for use in object */
         this.methods.removeBanner = this.removeBanner.bind(this, this.app);
+        this.model.sdk = this.sdk;
     }
 
     getEventProperties(action, interactive) {
@@ -264,6 +264,7 @@ class Exp {
     /* call MOUNTED lifecycle hook */
     loaded() {
         /* track 'show' if tracking is set to true */
+        console.log()
         if (this.tracking && this.sdk !== null && this.context !== null) {
             this.sdk.track('banner', this.getEventProperties('show', false));
         }
@@ -573,7 +574,6 @@ class Exp {
 
     /* initial bindings of methods */
     bindMethods(template = undefined) {
-        console.log(template)
         var that = this;
         let supportedEvents = ["click", "submit", "input", "hover"];
         let selector = supportedEvents.map(event => {
@@ -581,7 +581,6 @@ class Exp {
         });
 
         var events = this.select(selector.join(), template);
-        console.log(events)
 
         events.forEach(el => {
            supportedEvents.forEach(event => {
