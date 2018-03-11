@@ -108,6 +108,7 @@ class Exp {
                 });
                 return;
             } else if (this.trigger.type = "onaction"){
+                var self = this;
                 var el = this.trigger.element;
                 var action = this.trigger.action || "click";
                 const delay = this.trigger.delay || 0;
