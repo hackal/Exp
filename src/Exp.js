@@ -52,6 +52,7 @@ class Exp {
         this.supportedAttributes = ["src", "href", "alt"];
         /* init model */
         this.model = {};
+        this.model.sdk = this.sdk;
 
         /* method for rendering the banner */
         var render = function(self) {
