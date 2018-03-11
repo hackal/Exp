@@ -658,8 +658,8 @@ class Exp {
         var branding = document.createElement('object');
         var uuid = this.getUuid();
         this.app.appendChild(branding);
-        branding.innerHTML = '<a href="https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral" ' + uuid + ' target="_blank">Powered by Exponea</a>';
-        this.addStyle('[' + uuid + ']{font-size:11px;position:absolute;color:' + color + ';opacity:.6;right:5px;bottom:5px;padding-top:0;text-decoration:none}[' + uuid + ']:hover{opacity:.9}');
+        branding.innerHTML = '<a href="https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral" e' + uuid + ' target="_blank">Powered by Exponea</a>';
+        this.addStyle('[e' + uuid + ']{font-size:11px;position:absolute;color:' + color + ';opacity:.6;right:5px;bottom:5px;padding-top:0;text-decoration:none}[e' + uuid + ']:hover{opacity:.9}');
     }
 
     /**
