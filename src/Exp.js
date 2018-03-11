@@ -15,6 +15,7 @@ class Exp {
         this.__storage = {
             loopDefinitions: {}
         };
+        this.backdrop = null;
 
         this.html = (_ => {
             if (settings.html !== undefined) return settings.html;
@@ -87,7 +88,7 @@ class Exp {
                 self.bindMethods();
                 /* move methods to model for outside use */
                 self.moveMethods();
-                if (settings.backdrop) self.addBackdrop();
+                if (settings.backdrop) self.addBackdrop(settings.backdrop);
                 if (settings.position) self.moveToPosition(settings.position);
             }
             self.loaded();
@@ -267,8 +268,8 @@ class Exp {
     }
 
     /* handle BACKDROP optioin */
-    addBackdrop() {
-        const backdropStyle = {
+    addBackdrop(style) {
+        let backdropStyle = {
             "position": "fixed",
             "top": "0",
             "left": "0",
@@ -277,17 +278,21 @@ class Exp {
             "z-index": "999999",
             "background": "rgba(0,0,0,0.7)"
         }
+
+        for (var key of Object.keys(style)) {
+            backdropStyle[key] = style[key];
+        }
+
         let backdrop = document.createElement('div');
         this.setStyleFromObject(backdropStyle, backdrop);
-        this.app.style['position'] = "relative";
-        this.app.firstChild.style["z-index"] = "9999999";
-        this.app.appendChild(backdrop);
+        this.app.parentNode.style['position'] = "relative";
+        this.app.style["z-index"] = "9999999";
+        this.backdrop = this.app.parentNode.appendChild(backdrop);
     }
 
     /* call MOUNTED lifecycle hook */
     loaded() {
         /* track 'show' if tracking is set to true */
-        console.log()
         if (this.tracking && this.sdk !== null && this.context !== null) {
             this.sdk.track('banner', this.getEventProperties('show', false));
         }
@@ -297,6 +302,8 @@ class Exp {
     /* remove banner */
     removeBanner() {
         this.app.parentNode.removeChild(this.app);
+        if (this.backdrop !== null) this.backdrop.parentNode.removeChild(this.backdrop);
+
          /* track 'close' if tracking is set to true */
         if (this.tracking && this.sdk !== null && this.context !== null) {
             this.sdk.track('banner', this.getEventProperties('close'));
