@@ -71,6 +71,7 @@ class Exp {
             if(!self.control_group){
                 if(self.branded) self.addBranding();
                 self.addAnimationClass();
+                self.bindAttributes();
                 self.bindFors();
                 self.loadRcm();
                 self.bindClose();
@@ -363,6 +364,33 @@ class Exp {
         this.model[arrayName].forEach(item => {
             const template = this.__storage.loopDefinitions[arrayName].cloneNode(true);
             const bindings = this.select(`[exp-bind]`, template);
+            let supportedAttributes = ["src", "href", "alt"];
+            let selector = supportedAttributes.map(attr => {
+                return `*[exp-${attr}]`;
+            });
+            const elements = this.select(selector.join(), template);
+
+            elements.forEach(el => {
+                supportedAttributes.forEach(attr => {
+                    var val = el.getAttribute('exp-' + attr);
+                    if (val === null) return;
+
+                    if (val.indexOf('.') == -1) {
+                        el[attr] = item;
+                    } else {
+                        const keys = val.split('.');
+
+                        function rec(items, dict) {
+                            if (items.length == 1) return dict[items[0]];
+                            else return rec(items.slice(1), dict[items[0]]);
+                        }
+                        var value = rec(keys.slice(1), item);
+
+                        el[attr] = value;
+                    };
+                });
+            });
+
             bindings.forEach(bind => {
                 const val = bind.getAttribute('exp-bind');
                 if (val.indexOf('.') == -1) {
@@ -382,7 +410,7 @@ class Exp {
 
             expFors.forEach(expFor => {
                 let el = document.createElement('div');
-                el.innerHTML = template.innerHTML.trim();
+                el.innerHTML = template.innerHTML;
                 expFor.appendChild(el);
             });
         });
@@ -477,6 +505,7 @@ class Exp {
                     that.updateBindings(key, value);
                     that.updateModels(key, value);
                     that.updateIfs(key, value);
+                    that.updateAttributes(key, value);
                 }
             });
 
@@ -514,10 +543,45 @@ class Exp {
         });
     }
 
+    updateAttributes(key, value) {
+        let supportedAttributes = ["src", "href", "alt"];
+        let selector = supportedAttributes.map(attr => {
+            return `*[exp-${attr}="${key}"]`;
+        });
+        const that = this;
+        const elements = this.select(selector.join());
+
+        elements.forEach(el => {
+            supportedAttributes.forEach(attr => {
+                var val = el.getAttribute('exp-' + attr);
+                if (val === null || !(val in that.model)) return;
+                
+                el[attr] = that.model[val];
+            })
+        });
+    }
+
+    bindAttributes() {
+        let supportedAttributes = ["src", "href", "alt"];
+        let selector = supportedAttributes.map(attr => {
+            return `*[exp-${attr}]`;
+        });
+        const that = this;
+        const elements = this.select(selector.join());
+        elements.forEach(el => {
+            supportedAttributes.forEach(attr => {
+                var val = el.getAttribute('exp-' + attr);
+                if (val === null || !(val in that.model)) return;
+                
+                el[attr] = that.model[val];
+            })
+        })
+    }
+
     /* initial bindings of methods */
     bindMethods() {
         var that = this;
-        let supportedEvents = ["click", "submit", "input"];
+        let supportedEvents = ["click", "submit", "input", "hover"];
         let selector = supportedEvents.map(event => {
             return `*[exp-${event}]`;
         })
