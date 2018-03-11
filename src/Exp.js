@@ -575,7 +575,7 @@ class Exp {
     /* initial bindings of methods */
     bindMethods(template = undefined) {
         var that = this;
-        let supportedEvents = ["click", "submit", "input", "hover"];
+        let supportedEvents = ["click", "submit", "input", "hover", "blur"];
         let selector = supportedEvents.map(event => {
             return `*[exp-${event}]`;
         });
