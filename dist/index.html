@@ -1,91 +1,67 @@
 <!DOCTYPE html>
-<html>
- <head>
-    <title>Exp framework testing</title>
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-    <style type="text/css">
-    body {
-        font-family: 'Roboto', sans-serif;
-    }
-
-    * {
-        font-family: inherit;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
-    pre {
-        background: #f6f6f6;
-        padding: 10px;
-        font-family: Consolas, monaco, monospace;
-    }
-    </style>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
     <script>(function(d,b){if(!d.exponea){var a=function(a,g){function k(c){return function(){var e=arguments;""==a&&"initialize"==c&&e&&e[0].modify&&e[0].modify.overlay&&"loading"==b.readyState&&(b.write('<div id="__inf__overlay__" style="position:absolute;background:#fff;left:0;top:0;width:100%;height:100%;z-index:1000000"></div>'),setTimeout(function(){var a=b.getElementById("__inf__overlay__");a&&b.body.removeChild(a);res.__=!0},e[0].modify.delay||500));d.exponea._.push([a+c,arguments])}}var h=g.split(" "),f,c;res={_:[]};for(c=0;c<h.length;c++)f=h[c],res[f]=k(f);return res};d.exponea=a("","initialize identify update track trackLink trackEnhancedEcommerce getHtml showHtml showBanner showForm ping getAbTest");d.exponea.notifications=a("notifications.","isAvailable isSubscribed subscribe unsubscribe");var a=b.createElement("script"),g="https:"===b.location.protocol?"https:":"http:";a.type="text/javascript";a.async=!0;a.src=g+"//api.exponea.com/js/exponea.min.js";b.getElementsByTagName("head")[0].appendChild(a)}})(window,document);</script>
     <script type="text/javascript">
         exponea.initialize({
             "token": "26c242f2-0b15-11e8-ba97-14187733e19e"
+            //, customer: window.loggedInCustomer // replace window.loggedInCustomer with id of your web site customer, e.g. "john.smith@gmail.com"
     });
-    </script>
-    
- </head>
- <body>
-    a
-    <script src="./Exp.js"></script>
-    <script>
-    var banner = new Exp({
-        // recommendations: {
-        //     products: {
-        //         id: '5aa4514d8304340f209859f9',
-        //         total: 2
-        //     },
-        // },
-        sdk: exponea,
-        tracking: false,
-        // branded: false,
-        html: `
-            <div class="banner">
-                <div exp-for="product in products">
-                    <a exp-href="product" exp-bind="product" exp-click="ok"></a>
+</script>
+
+    <!-- <script src="./Exp.js"></script> -->
+</head>
+<body>
+    asd
+    <!-- <script>
+        var banner = new Exp({
+            sdk: exponea,
+            recommendations: {
+                products: {
+                    id: '5aa4514d8304340f209859f9',
+                    total: 5
+                }
+            },
+            html: `
+                <div class="banner">
+                    <ul>
+                        <li exp-for="product in products" exp-bind="product.name"></li>
+                    </ul>
+                    <table>
+                        <tbody>
+                            <tr exp-for="product in products">
+                                <td exp-bind="product.item_id"></td>
+                                <td exp-bind="product.name"></td>
+                                <td exp-bind="product.price"></td>
+                                <td exp-bind="product.url"></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <a exp-href="link">asd</a>
-                <h1 exp-bind="link">test</h1>
-                <input type="text" exp-model="link">
-                <input type="text" exp-model="inputText">
-                <p exp-bind="inputText"></p>
-                <a href="#" exp-close>close</a>
-            </div>
-        `,
-        style: `
-            .banner {
-                background-color: #ffd500;
-                width: 500px;
-                padding: 20px;
-                position: relative;
+            `,
+            style: `
+            table, th, td {
+                border: 1px solid black;
+            }`,
+            data: {
+                text: 'Adsadsasd',
+                products: [{ id: 1, name: "hat", variant: "red" },
+                           { id: 2, name: "shirt", variant: "pink" },
+                           { id: 3, name: "pants", variant: "blue" },
+                           { id: 4, name: "sneakers", variant: "red" },
+                           { id: 5, name: "slippers", variant: "none" }]
+            },
+            methods: {
+                ok: function() {
+                    console.log(1)
+                    alert(1)
+                }
             }
-            input, textarea {
-                font-size: 20px;
-                padding: 5px 10px;
-                border: 0;
-            }
-        `,
-        scoped: true,
-        data: {
-            inputText: "",
-            products: [],
-            link: 'https://google.com',
-            products: ['google.com']
-        },
-        methods: {
-            ok(e) {
-                e.preventDefault();
-                alert(1)
-            }
-        },
-        backdrop: true,
-    });
-    </script>
- </body>
+        })
+    </script> -->
+</body>
 </html>
-
-
