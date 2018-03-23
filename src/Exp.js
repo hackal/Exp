@@ -8,12 +8,13 @@ class Exp {
         this.recommendations = settings.recommendations || {};
         this.scoped = settings.scoped || false;
 
-        this.data = settings.data;
+        this.data = settings.data || {};
         this.methods = settings.methods || {};
         this.mounted = settings.mounted || null;
 
         this.__storage = {
-            loopDefinitions: {}
+            loopDefinitions: {},
+            initializedLoops: {}
         };
         this.backdrop = null;
 
@@ -103,6 +104,7 @@ class Exp {
                 self.bindFors();
                 self.loadRcm();
                 self.bindClose();
+                self.bindAction();
             }
             return self.model;
         }
@@ -307,11 +309,6 @@ class Exp {
     removeBanner() {
         this.app.parentNode.removeChild(this.app);
         if (this.backdrop !== null) this.backdrop.parentNode.removeChild(this.backdrop);
-
-         /* track 'close' if tracking is set to true */
-        if (this.tracking && this.sdk !== null && this.context !== null) {
-            this.sdk.track('banner', this.getEventProperties('close'));
-        }
     }
 
     /* method for inserting stylesheet */
@@ -355,7 +352,10 @@ class Exp {
         let selectorsText = selectors.map(selector => {
             let attr = `exp-${this.getUuid()}`;
             this.addAttributes(selector.trim(), attr);
-            return `${selector}[${attr}]`;
+            if (this.select(selector.trim()).length > 0) {
+                return `${selector}[${attr}]`;
+            }
+            return  `${selector}`;
         });
 
         return `${selectorsText.join()} { ${rule.style.cssText} }`;
@@ -398,49 +398,85 @@ class Exp {
     }
 
     updateFors(arrayName, key, item) {
-        const template = this.__storage.loopDefinitions[arrayName].cloneNode(true);
-        
-        let attrSelector = this.supportedAttributes.map(attr => {
-            return `*[exp-${attr}]`;
-        });
+        this.__storage.loopDefinitions[arrayName].forEach(def => {
+            const template = def.template.cloneNode(true);
+            const hash = def.hash;
 
-        const expFors = this.select(`[exp-for="${key} in ${arrayName}"]`);
-        const expAttrs = this.select(attrSelector.join(), template);
-        const expBinds = this.select(`[exp-bind]`, template);
+            let attrSelector = this.supportedAttributes.map(attr => {
+                return `*[exp-${attr}]`;
+            });
 
-        expAttrs.forEach(el => {
-            this.supportedAttributes.forEach(attr => {
-                const val = el.getAttribute('exp-' + attr);
-                if (val === null) return;
+            const expFors = this.select(`[exp-for="${key} in ${arrayName}"][${hash}], [exp-rcm="${key} in ${arrayName}"][${hash}]`);
+            const expForRefs = this.select(`[exp-for-ref="${key} in ${arrayName}"][${hash}]`);
+            const expAttrs = this.select(attrSelector.join(), template);
+            const expBinds = this.select(`[exp-bind]`, template);
 
+            expAttrs.forEach(el => {
+                this.supportedAttributes.forEach(attr => {
+                    const val = el.getAttribute('exp-' + attr);
+                    if (val === null) return;
+
+                    if (val.indexOf('.') == -1) {
+                        el[attr] = item;
+                    } else {
+                        const keys = val.split('.');
+                        const value = this.rec(keys.slice(1), item);
+                        el[attr] = value;
+                    };
+                });
+            });
+
+            expBinds.forEach(el => {
+                const val = el.getAttribute('exp-bind');
                 if (val.indexOf('.') == -1) {
-                    el[attr] = item;
+                    el.textContent = item;
                 } else {
                     const keys = val.split('.');
-                    const value = this.rec(keys.slice(1), item);
-                    el[attr] = value;
-                };
+                    var value = this.rec(keys.slice(1), item);
+                    el.textContent = value
+                }
             });
-        });
 
-        expBinds.forEach(el => {
-            const val = el.getAttribute('exp-bind');
-            if (val.indexOf('.') == -1) {
-                el.textContent = item;
-            } else {
-                const keys = val.split('.');
-                var value = this.rec(keys.slice(1), item);
-                el.textContent = value
+            if (expFors.length > 0) {
+                expFors.forEach(expFor => {
+                    let el = document.createElement('div');
+                    if (template.tagName == 'TR') {
+                        el = document.createElement('tbody');
+                    }
+                    if (template.tagName == 'TD') {
+                        el = document.createElement('tr');
+                    }
+                    template.removeAttribute('exp-for');
+                    template.removeAttribute('exp-rcm');
+                    template.removeAttribute(hash);
+                    el.innerHTML = template.outerHTML.trim();
+                    el.firstChild.setAttribute('exp-for-ref', `${key} in ${arrayName}`);
+                    el.firstChild.setAttribute(hash, '');
+                    expFor.parentNode.replaceChild(el.firstChild, expFor);
+                    this.bindMethods(el);
+                });
             }
-        });
 
-        this.bindMethods(template);
-
-        expFors.forEach(expFor => {
-            let el = document.createElement('div');
-            el.innerHTML = template.innerHTML;
-            expFor.appendChild(el);
-            this.bindMethods(el);
+            if (expForRefs.length > 0) {
+                expForRefs.forEach(ref => {
+                    let el = document.createElement('div');
+                    if (template.tagName == 'TR') {
+                        el = document.createElement('tbody');
+                    }
+                    if (template.tagName == 'TD') {
+                        el = document.createElement('tr');
+                    }
+                    template.removeAttribute('exp-for');
+                    template.removeAttribute('exp-rcm');
+                    el.innerHTML = template.outerHTML.trim();
+                    ref.removeAttribute('exp-for-ref');
+                    ref.removeAttribute(hash);
+                    el.firstChild.setAttribute('exp-for-ref', `${key} in ${arrayName}`);
+                    el.firstChild.setAttribute(hash, '');
+                    ref.parentNode.insertBefore(el.firstChild, ref.nextSibling);
+                    this.bindMethods(el);
+                });
+            }
         });
     }
 
@@ -457,6 +493,9 @@ class Exp {
                                 this.model[keys[i]].push(item)
                             })
                         }
+                        if (this.recommendations[keys[i]].loadingKey !== undefined) {
+                            this.model[this.recommendations[keys[i]].loadingKey] = true;
+                        }
                     },
                     fillWithRandom: true
                 };
@@ -469,21 +508,43 @@ class Exp {
     bindFors() {
         const expFors = this.select(`[exp-for], [exp-rcm]`);
         expFors.forEach(expFor => {
-            let key = expFor.getAttribute('exp-for').split(' ')[0];
-            let arrayName = expFor.getAttribute('exp-for').split(' ')[2];
+            let attr = expFor.hasAttribute('exp-for') ? 'exp-for' : 'exp-rcm';
+            let key = expFor.getAttribute(attr).split(' ')[0];
+            let arrayName = expFor.getAttribute(attr).split(' ')[2];
+            this.__storage.loopDefinitions[arrayName] = [];
+            this.__storage.initializedLoops[arrayName] = false;
+        });
 
-            this.__storage.loopDefinitions[arrayName] = expFor.cloneNode(true);
-            expFor.innerHTML = '';
+        expFors.forEach(expFor => {
+            let attr = expFor.hasAttribute('exp-for') ? 'exp-for' : 'exp-rcm';
+            let key = expFor.getAttribute(attr).split(' ')[0];
+            let arrayName = expFor.getAttribute(attr).split(' ')[2];
+            let hash = 'e-' + this.getUuid();
+            expFor.setAttribute(hash, '');
+            let template = expFor.cloneNode(true);
 
-            if (this.model[arrayName]) {
-                this.overridePush(this.model[arrayName], arrayName, key);
-                this.model[arrayName].forEach(item => {
-                    this.updateFors(arrayName, key, item);
-                })
-            } else {
-                this.model[arrayName] = [];
-                this.overridePush(this.model[arrayName], arrayName, key);
+            this.__storage.loopDefinitions[arrayName].push({
+                template,
+                hash
+            });
+        });
+
+        expFors.forEach(expFor => {
+            let attr = expFor.hasAttribute('exp-for') ? 'exp-for' : 'exp-rcm';
+            let key = expFor.getAttribute(attr).split(' ')[0];
+            let arrayName = expFor.getAttribute(attr).split(' ')[2];
+
+            if (!this.__storage.initializedLoops[arrayName]) {
+                if (this.model[arrayName]) {
+                    this.model[arrayName].forEach(item => {
+                        this.updateFors(arrayName, key, item);
+                    });
+                } else {
+                    this.model[arrayName] = [];
+                    this.overridePush(this.model[arrayName], arrayName, key);
+                }
             }
+            this.__storage.initializedLoops[arrayName] = true;
         })
     }
 
@@ -628,12 +689,30 @@ class Exp {
        });
     }
 
+    bindAction() {
+        let selector = `[exp-action]`;
+        var elements = this.select(selector);
+        elements.forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (this.tracking && this.sdk !== null && this.context !== null) {
+                    this.sdk.track('banner', this.getEventProperties('click'));
+                }
+            });
+        })
+    }
+
     bindClose() {
         let selector = `[exp-close]`;
         var elements = this.select(selector);
         elements.forEach(el => {
             el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 this.removeBanner();
+                /* track 'close' if tracking is set to true */
+                if (this.tracking && this.sdk !== null && this.context !== null) {
+                    this.sdk.track('banner', this.getEventProperties('close'));
+                }
             });
         })
     }
