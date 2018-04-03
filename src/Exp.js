@@ -476,6 +476,16 @@ class Exp {
         this.app.parentNode.style['position'] = "relative";
         this.app.style["z-index"] = "9999999";
         this.backdrop = this.app.parentNode.appendChild(backdrop);
+
+        this.backdrop.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this.removeBanner();
+            /* track 'close' if tracking is set to true */
+            if (this.tracking && this.sdk !== null && this.context !== null) {
+                this.sdk.track('banner', this.getEventProperties('close'));
+            }
+        })
     }
 
     /* call MOUNTED lifecycle hook */
