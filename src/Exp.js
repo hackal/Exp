@@ -4,6 +4,7 @@ class Exp {
         this.el = settings.el || null;
         this.app = null;
         this.attach = settings.attach || null;
+        this.bannerId = 'e-' + this.getUuid();
         var anim = function(A) {
             A = function(n, g, t, e) {
               var a, o, c,
@@ -546,6 +547,9 @@ class Exp {
         let selectorsText = selectors.map(selector => {
             let attr = `exp-${this.getUuid()}`;
             this.addAttributes(selector.trim(), attr);
+            if (selector === ".exponea-animate") {
+                return `${selector}[${this.bannerId}]`
+            }
             if (this.select(selector.trim()).length > 0) {
                 return `${selector}[${attr}]`;
             }
@@ -932,6 +936,7 @@ class Exp {
     addAnimationClass(className = "exponea-animate") {
         if (this.app === null) return;
         if (this.app.classList) {
+            this.app.setAttribute(this.bannerId, '');
             this.app.classList.add(className);
         } else {
             this.app.className += ' ' + className;
