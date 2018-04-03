@@ -42,7 +42,54 @@
           this.$refs.nav.style.height = '0px'
           this.$anim(this.$refs.nav, {height: height}, 0.4)
         }
+      },
+      scoped: true,
+      style: `
+      .exponea-animate {
+        display: block;
       }
+      .header {
+          background: #ff8330;
+          width: 500px;
+          margin: 50px auto;
+          position: relative;
+          display: none;
+        }
+
+        .header .top {
+          overflow: hidden;
+          box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .header .top .navLink {
+          display: block;
+          padding: 10px;
+          color: #fff;
+          font-size: 130%;
+          float: left;
+          text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .header .nav {
+          overflow: hidden;
+          height: 0; 
+        }
+
+        .header .nav ul {
+          padding: 10px 0px 10px 0px;
+        }
+
+        .header .nav ul li a {
+          padding: 10px;
+          color: #fff;
+          font-size: 90%;
+          text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+          display: block;
+        }
+
+        .header .nav ul li a:hover {
+          background: rgba(0, 0, 0, 0.1);
+        }`
     });
     // document.querySelector('.navLink').addEventListener('click', function(e) {
     //     e.preventDefault();
@@ -67,48 +114,6 @@
 
 body {
   font-size: 16px;
-}
-
-.header {
-  background: #ff8330;
-  width: 500px;
-  margin: 50px auto;
-  position: relative;
-}
-
-.header .top {
-  overflow: hidden;
-  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.header .top .navLink {
-  display: block;
-  padding: 10px;
-  color: #fff;
-  font-size: 130%;
-  float: left;
-  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.header .nav {
-  overflow: hidden;
-  height: 0; 
-}
-
-.header .nav ul {
-  padding: 10px 0px 10px 0px;
-}
-
-.header .nav ul li a {
-  padding: 10px;
-  color: #fff;
-  font-size: 90%;
-  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
-  display: block;
-}
-
-.header .nav ul li a:hover {
-  background: rgba(0, 0, 0, 0.1);
 }
 </style>
 </body>
