@@ -1,41 +1,43 @@
+/* Main class */
 class Exp {
     constructor(settings) {
         /* Find application element */
         this.el = settings.el || null;
-        this.app = null;
-        this.attach = settings.attach || null;
-
-        this.recommendations = settings.recommendations || {};
-        this.scoped = settings.scoped || false;
-
+        /* Initializing data model */
         this.data = settings.data || {};
+        /* Controller methods */
         this.methods = settings.methods || {};
+        /* Initializing model */
+        this.model = {};
+
+        this.app = null;
+        this.attach = settings.attach || null; /* TODO: ? */
+        /* Dictionaries describing recommendations */
+        this.recommendations = settings.recommendations || {};
+        /* Scoping CSS rules locally for banner */
+        this.scoped = settings.scoped || false;
+        /* Function triggered after rendering the banner */
         this.mounted = settings.mounted || null;
 
-        this.__storage = {
-            loopDefinitions: {},
-            initializedLoops: {}
-        };
+        
         this.backdrop = null;
-
+        /* Look for either explicit code or for HTML code in context */
         this.html = (_ => {
             if (settings.html !== undefined) return settings.html;
             if (settings.context !== undefined) {
                 if (settings.context.html !== undefined) return settings.context.html;
             }
-
             return null;
         })();
-
+        /* Look for either explicit code or for CSS code in context */
         this.style = (_ => {
             if (settings.style !== undefined) return settings.style;
             if (settings.context !== undefined) {
                 if (settings.context.style !== undefined) return settings.context.style;
             }
-
             return null;
         })();
-
+        /* Exponea SDK passed through context attribute when using production banners */
         this.sdk = (_ => {
             if (settings.context !== undefined) {
                 if (settings.context.sdk !== undefined) return settings.context.sdk;
@@ -43,7 +45,7 @@ class Exp {
 
             return null;
         })();
-
+        /* Exponea banner context */
         this.context = (_ => {
             if (settings.context !== undefined) {
                 if (settings.context.data !== undefined) return settings.context.data;
@@ -51,7 +53,7 @@ class Exp {
 
             return null;
         })();
-
+        /* TODO: Check functionality? */
         this.inPreview = (_ => {
             if (settings.context !== undefined) {
                 if (settings.context.inPreview !== undefined) return settings.context.inPreview;
@@ -60,102 +62,128 @@ class Exp {
             return false;
         })();
 
-        /* tracking by default false */
+        /* Internal storage */
+        this.__storage = {
+            loopDefinitions: {},
+            initializedLoops: {}
+        };
+
+        /* Tracking by default false. Tracks show/close automatically. */
         if (settings.tracking === undefined) {
             this.tracking = true;
         } else {
             this.tracking = settings.tracking;
         }
-
+        /* Setting trigger for banner display */
         this.trigger = settings.trigger || null;
-        this.control_group = settings.control_group || false;
+        this.control_group = settings.control_group || false; /* TODO: What for? */
+        /* Adding Exponea branding options */
         if (settings.branded === undefined || (settings.branded && settings.branded !== "black" && settings.branded !== "white")) {
             this.branded = 'black';
         } else {
             this.branded = settings.branded;
         }
         this.supportedAttributes = ["src", "href", "alt"];
-        /* init model */
-        this.model = {};
 
-        /* method for rendering the banner */
-        var render = function(self) {
-            if(!self.control_group){
-                self.init();
-                /* init watcher */
-                self.watcher(self.data);
-                /* bind all models and methods */
-                self.bindModels();
-                self.bindMethods();
-                /* move methods to model for outside use */
-                self.moveMethods();
-                if (settings.backdrop) self.addBackdrop(settings.backdrop);
-                if (settings.position) self.moveToPosition(settings.position);
-            }
-            self.loaded();
-            if(!self.control_group){
-                if(self.branded === "white"){
-                    self.addBranding("white");
-                } else if (self.branded){
-                    self.addBranding("black");
-                }
-                self.addAnimationClass();
-                self.bindAttributes();
-                self.bindFors();
-                self.loadRcm();
-                self.bindClose();
-                self.bindAction();
-            }
-            return self.model;
-        }
-
-        /* if trigger exists, render based on the type of the trigger */
+        /* If trigger exists, inject into DOM based on the type of the trigger */
         if (this.trigger !== null && !this.inPreview) {
             if (this.trigger.type == "onready") {
-                /* renders banner once page's elements are rendered */
+                /* Renders banner once page elements are loaded */
                 const delay = this.trigger.delay || 0;
                 var self = this;
                 window.addEventListener('load', function() {
                     setTimeout(() => {
-                        render(self);
+                        self.inject();
                     }, delay);
                 });
                 return;
             } else if (this.trigger.type == "onexit") {
-                /* renders banner if user wants to leave the page */
+                /* Renders banner if user wants to leave the page */
                 const delay = this.trigger.delay || 0;
                 window.__exp_triggered = false;
                 var self = this;
                 document.body.addEventListener("mouseleave", function (e) {
-                    /* check window was left */
+                    /* Check window was left */
                     if (e.offsetY - window.scrollY < 0 && !window.__exp_triggered) {
                         window.__exp_triggered = true;
                         setTimeout(() => {
-                            render(self);
+                            self.inject(self);
                         }, delay);
                     }
                 });
                 return;
-            } else if (this.trigger.type = "onaction"){
+            } else if (this.trigger.type = "onaction") {
+                /* Renders banner on specific user action */
                 var self = this;
-                var el = this.trigger.element;
                 var action = this.trigger.action || "click";
                 const delay = this.trigger.delay || 0;
-                if(el){
-                    el.addEventListener(action, function(){
+                if (this.trigger.element) {
+                    this.trigger.element.addEventListener(action, function() {
                         setTimeout(() => {
-                            render(self);
+                            self.inject(self);
                         }, delay);
                     });
                 }
                 return;
             } else {
-                /* if incorrect type of trigger is given do not render at all */
-                return;
+                /* If incorrect type of trigger is given do not render at all */
+                throw `Incorrect trigger type ${ this.trigger.type }`;
             }
         }
+        /* If no trigger type inject normally */
+        return this.inject();
+    }
 
-        return render(this);
+    /* Method for injecting the banner into DOM */
+    inject() {
+        /* For control group do not inject and only track show */
+        if (this.control_group) {
+            this.loaded();
+        }
+        this.initializeModel(this.data);
+        /* Bind all models and methods */
+        this.bindModels();
+        this.bindMethods();
+        /* move methods to model for outside use */
+        self.moveMethods();
+        if (settings.backdrop) self.addBackdrop(settings.backdrop);
+        if (settings.position) self.moveToPosition(settings.position);
+        self.loaded();
+        if(self.branded === "white"){
+            self.addBranding("white");
+        } else if (self.branded){
+            self.addBranding("black");
+        }
+        self.addAnimationClass();
+        self.bindAttributes();
+        self.bindFors();
+        self.loadRcm();
+        self.bindClose();
+        self.bindAction();
+        return self.model;
+    }
+
+    /* Initalize model from data */
+    initializeModel(data) {
+        var self = this;
+        Object.keys(data).forEach(key => {
+            var value = data[key];
+            /* Define new setters to update model on change */
+            Object.defineProperty(self.model, key, {
+                enumerable: true,
+                get() {
+                    return value;
+                },
+                set(val) {
+                    value = val;
+                    self.updateBindings(key, value);
+                    self.updateModels(key, value);
+                    self.updateIfs(key, value);
+                    self.updateAttributes(key, value);
+                }
+            });
+            self.model[key] = value;
+        });
     }
 
     /* initialization logic */
@@ -576,31 +604,6 @@ class Exp {
 
         expIfs.forEach(el => {
             el.style.display = (value ? "block" : "none");
-        });
-    }
-
-    /* watch data model */
-    watcher(model) {
-        var that = this;
-        Object.keys(model).forEach(key => {
-            var value = model[key];
-
-            /* define new setters and call updates */
-            Object.defineProperty(that.model, key, {
-                enumerable: true,
-                get() {
-                    return value;
-                },
-                set(val) {
-                    value = val;
-                    that.updateBindings(key, value);
-                    that.updateModels(key, value);
-                    that.updateIfs(key, value);
-                    that.updateAttributes(key, value);
-                }
-            });
-
-            that.model[key] = value;
         });
     }
 
