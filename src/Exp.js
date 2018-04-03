@@ -1,8 +1,11 @@
 /* Main class */
 class Exp {
     constructor(settings) {
-        /* Find application element */
+        /* Find DOM element which contains Exp code */
         this.el = settings.el || null;
+        /* Find DOM element to which append HTML code */
+        this.attach = settings.attach || null;
+
         /* Initializing data model */
         this.data = settings.data || {};
         /* Controller methods */
@@ -10,17 +13,28 @@ class Exp {
         /* Initializing model */
         this.model = {};
 
+        /* Initialization of Exp app */
         this.app = null;
-        this.attach = settings.attach || null; /* TODO: ? */
+
+        /* Generate Id for banner */
+        this.bannerId = 'e-' + this.getUuid();
         /* Dictionaries describing recommendations */
         this.recommendations = settings.recommendations || {};
+
         /* Scoping CSS rules locally for banner */
         this.scoped = settings.scoped || false;
         /* Function triggered after rendering the banner */
         this.mounted = settings.mounted || null;
-
-        
+        /* DOM element onto which Exp app will be placed */
         this.backdrop = null;
+        /* Adding Exponea branding options */
+        if (settings.branded === undefined || (settings.branded && settings.branded !== "black" && settings.branded !== "white")) {
+            this.branded = 'black';
+        } else {
+            this.branded = settings.branded;
+        }
+        this.supportedAttributes = ["src", "href", "alt"];
+
         /* Look for either explicit code or for HTML code in context */
         this.html = (_ => {
             if (settings.html !== undefined) return settings.html;
@@ -53,7 +67,7 @@ class Exp {
 
             return null;
         })();
-        /* TODO: Check functionality? */
+        /* Check whether banner is in Exponea editor or not */
         this.inPreview = (_ => {
             if (settings.context !== undefined) {
                 if (settings.context.inPreview !== undefined) return settings.context.inPreview;
@@ -76,15 +90,7 @@ class Exp {
         }
         /* Setting trigger for banner display */
         this.trigger = settings.trigger || null;
-        this.control_group = settings.control_group || false; /* TODO: What for? */
-        /* Adding Exponea branding options */
-        if (settings.branded === undefined || (settings.branded && settings.branded !== "black" && settings.branded !== "white")) {
-            this.branded = 'black';
-        } else {
-            this.branded = settings.branded;
-        }
-        this.supportedAttributes = ["src", "href", "alt"];
-
+        
         /* If trigger exists, inject into DOM based on the type of the trigger */
         if (this.trigger !== null && !this.inPreview) {
             if (this.trigger.type == "onready") {
@@ -137,30 +143,83 @@ class Exp {
     /* Method for injecting the banner into DOM */
     inject() {
         /* For control group do not inject and only track show */
-        if (this.control_group) {
+        if (false) { /* TODO: How to check control_group from context */
             this.loaded();
         }
+        /* Initialize DOM interaction and model */
+        this.initializeDOM();
         this.initializeModel(this.data);
         /* Bind all models and methods */
         this.bindModels();
         this.bindMethods();
-        /* move methods to model for outside use */
-        self.moveMethods();
-        if (settings.backdrop) self.addBackdrop(settings.backdrop);
-        if (settings.position) self.moveToPosition(settings.position);
-        self.loaded();
-        if(self.branded === "white"){
-            self.addBranding("white");
-        } else if (self.branded){
-            self.addBranding("black");
+
+        if (this.backdrop) this.addBackdrop();
+        // if (this.position) this.moveToPosition(this.position);
+        // this.loaded();
+        // if(this.branded === "white"){
+        //     this.addBranding("white");
+        // } else if (this.branded){
+        //     this.addBranding("black");
+        // }
+        // this.addAnimationClass();
+        // this.bindAttributes();
+        // this.bindFors();
+        // this.loadRcm();
+        // this.bindClose();
+        // this.bindAction();
+        // return this.model;
+    }
+
+    /* Initialization of DOM interaction */
+    initializeDOM() {
+        /* Use el to find element over which to mask Exp */
+        if (this.el !== null) {
+            this.app = document.querySelector(this.el);
+        /* Otherwise check for HTML code which would be created and injected into DOM */
+        } else if (this.html !== null) {
+            /* Insert HTML to page */
+            let el = document.createElement('div');
+            el.innerHTML = this.html.trim();
+            /* Append the element to target or to body */
+            if (this.attach !== null) {
+                this.app = document.querySelector(this.attach).appendChild(el.firstChild);
+            } else {
+                this.app = document.body.appendChild(el.firstChild);
+            }
+        } else {
+            return;
         }
-        self.addAnimationClass();
-        self.bindAttributes();
-        self.bindFors();
-        self.loadRcm();
-        self.bindClose();
-        self.bindAction();
-        return self.model;
+        /* Handles CSS inserting and scoping */
+        if (this.style !== null) {
+            if (this.scoped) {
+                /* Quickly add style which is disabled, rename it and remove it */
+                let style = this.addStyle(this.style, true)
+                let rules = this.listify(style.sheet.cssRules);
+                var scopedStyle = "";
+                /* Iterate over CSS rules */
+                rules.forEach(rule => {
+                    /* Check rule is instances of CSSStyleRule */
+                    if (rule instanceof CSSStyleRule) {
+                        scopedStyle = scopedStyle + this.generateScopedRule(rule);
+                    }
+                    /* Rule is media query */
+                    if (rule instanceof CSSMediaRule) {
+                        scopedStyle = scopedStyle + `@media${rule.conditionText} {`
+                        this.listify(rule.cssRules).forEach(rule => {
+                            scopedStyle = scopedStyle + this.generateScopedRule(rule);
+                        });
+                        scopedStyle = scopedStyle + `}`;
+                    }
+                });
+                /* Append scoped style */
+                this.addStyle(scopedStyle);
+                /* Remove original style */
+                style.parentNode.removeChild(style);
+            } else {
+                /* Append style with global scope */
+                this.addStyle(this.style);
+            }
+        }
     }
 
     /* Initalize model from data */
@@ -184,66 +243,94 @@ class Exp {
             });
             self.model[key] = value;
         });
-    }
 
-    /* initialization logic */
-    init() {
-        /* handles HTML, EL, APP, attach settings */
-        if (this.el !== null) {
-            /* find element in place */
-            this.app = document.querySelector(this.el);
-        } else if (this.html !== null) {
-            /* insert HTML to page */
-            let el = document.createElement('div');
-            el.innerHTML = this.html.trim();
-
-            /* append the element to target or to body */
-            if (this.attach !== null) {
-                this.app = document.querySelector(this.attach).appendChild(el.firstChild);
-            } else {
-                this.app = document.body.appendChild(el.firstChild);
+        /* Copy methods from this.methods to this.model scope so it can be accessed with `this` */
+        if (this.methods !== null) {
+            for (var key of Object.keys(this.methods)) {
+                this.model[key] = this.methods[key];
             }
         }
-
-        /* handles CSS inserting and scoping */
-        if (this.style !== null) {
-            if (this.scoped) {
-                let style = this.addStyle(this.style, true)
-                let rules = this.listify(style.sheet.cssRules);
-                var scopedStyle = "";
-
-                /* iterate over CSS rules */
-                rules.forEach(rule => {
-                    /* rule is actually rule */
-                    if (rule instanceof CSSStyleRule) {
-                        scopedStyle = scopedStyle + this.generateScopedRule(rule);
-                    }
-
-                    /* rule is media query */
-                    if (rule instanceof CSSMediaRule) {
-                        scopedStyle = scopedStyle + `@media${rule.conditionText} {`
-                        this.listify(rule.cssRules).forEach(rule => {
-                            scopedStyle = scopedStyle + this.generateScopedRule(rule);
-                        });
-                        scopedStyle = scopedStyle + `}`;
-                    }
-                });
-
-                /* append scoped style */
-                this.addStyle(scopedStyle);
-
-                /* remove original style */
-                style.parentNode.removeChild(style);
-            } else {
-                /* append style */
-                this.addStyle(this.style);
-            }
-        }
-
-        /* register removeBanner method for use in object */
-        this.methods.removeBanner = this.removeBanner.bind(this, this.app);
+        /* Bind special methods to be used in `this` scope */
+        this.model.removeBanner = this.removeBanner.bind(this, this.app);
         this.model.sdk = this.sdk;
     }
+
+    /* Initial binding of input models */
+    bindModels() {
+        let selector = ["email", "number", "search", "tel", "text", "url", "checkbox", "radio"].map(input => {
+            return `input[type="${input}"][exp-model]`;
+        });
+        selector = selector.concat(["textarea[exp-model]", "select[exp-model]"]);
+        /* Find all input elements */
+        var inputs = this.select(selector.join());
+        inputs.forEach(input => {
+            const model = input.getAttribute("exp-model");
+            const type = input.getAttribute("type");
+            /* Handle different input types */
+            if (type === "checkbox") {
+                input.addEventListener("change", event => {
+                    this.model[model] = event.target.checked;
+                });
+            } else if (type === "radio") {
+                input.addEventListener("change", event => {
+                    this.model[model] = event.target.value;
+                });
+            } else {
+                input.addEventListener("input", event => {
+                    this.model[model] = event.target.value;
+                });
+            }
+        });
+    }
+
+    /* Initial bindings of methods */
+    bindMethods(template = undefined) {
+        var self = this;
+        let supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave"];
+        let selector = supportedEvents.map(event => {
+            return `*[exp-${event}]`;
+        });
+        var events = this.select(selector.join(), template);
+        events.forEach(el => {
+            supportedEvents.forEach(event => {
+                var method = el.getAttribute('exp-' + event);
+                if (method === null || !(method in self.methods)) return;
+                /* If exp-action is declared then add appropriate EventListener */
+                el.addEventListener(event, function(e) {
+                    self.methods[method].apply(self.model, [e]);
+                });
+            });
+        });
+    }
+
+    /* Method for inserting stylesheet */
+    addStyle(css, disabled = false){
+        if (this.app === null) return;
+        var style = document.createElement('style');
+        style.type= 'text/css';
+        style.appendChild(document.createTextNode(css)); /* BUG: Does not work in IE8 or less */
+        var inserted = this.app.appendChild(style);
+        inserted.sheet.disabled = disabled;
+        return inserted;
+    }
+
+    /* Method for adding unique ID to CSS selectors */
+    generateScopedRule(rule) {
+        let selectors = rule.selectorText.split(',');
+        let selectorsText = selectors.map(selector => {
+            let attr = `exp-${this.getUuid()}`;
+            this.addAttributes(selector.trim(), attr);
+            if (selector.includes(".exponea-animate")) {
+                return `${selector}[${this.bannerId}]`
+            }
+            if (this.select(selector.trim()).length > 0) {
+                return `${selector}[${attr}]`;
+            }
+            return  `${selector}`;
+        });
+        return `${selectorsText.join()} { ${rule.style.cssText} }`;
+    }
+
 
     getEventProperties(action, interactive) {
         if (this.context === null) return;
@@ -262,6 +349,7 @@ class Exp {
 
     /* handle POSITION option */
     moveToPosition(position) {
+        if (this.app === null) return;
         if (typeof position === "object") {
             this.setStyleFromObject(position, this.app);
         } else {
@@ -301,9 +389,10 @@ class Exp {
         });
     }
 
-    /* handle BACKDROP optioin */
+    /* Handle backdrop option */
     addBackdrop(style) {
-        let backdropStyle = {
+        if (this.app == null) return;
+        let backdropStyle = { 
             "position": "fixed",
             "top": "0",
             "left": "0",
@@ -322,6 +411,16 @@ class Exp {
         this.app.parentNode.style['position'] = "relative";
         this.app.style["z-index"] = "9999999";
         this.backdrop = this.app.parentNode.appendChild(backdrop);
+
+        this.backdrop.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this.removeBanner();
+            /* track 'close' if tracking is set to true */
+            if (this.tracking && this.sdk !== null && this.context !== null) {
+                this.sdk.track('banner', this.getEventProperties('close'));
+            }
+        })
     }
 
     /* call MOUNTED lifecycle hook */
@@ -335,20 +434,12 @@ class Exp {
 
     /* remove banner */
     removeBanner() {
+        if (this.app === null) return
         this.app.parentNode.removeChild(this.app);
         if (this.backdrop !== null) this.backdrop.parentNode.removeChild(this.backdrop);
     }
 
-    /* method for inserting stylesheet */
-    addStyle(css, disabled = false){
-        let style = document.createElement('style');
-        style.type= 'text/css';
-        style.appendChild(document.createTextNode(css)); // doesn't work in IE8 and less
 
-        let inserted = this.app.appendChild(style);
-        inserted.sheet.disabled = disabled;
-        return inserted;
-    }
 
     /* not used, not sure why it is here */
     getSelectorText(rules) {
@@ -358,45 +449,9 @@ class Exp {
         });
     }
 
-    /* helper method for adding attribute, used by CSS scoping */
-    addAttributes(selector, attr, val = "") {
-        this.select(selector).forEach(el => {
-            el.setAttribute(attr, val);
-        })
-    }
 
-    /* helper method for generating unique IDs, used by CSS scoping */
-    getUuid() {
-        var firstPart = (Math.random() * 46656) | 0;
-        var secondPart = (Math.random() * 46656) | 0;
-        firstPart = ("000" + firstPart.toString(36)).slice(-3);
-        secondPart = ("000" + secondPart.toString(36)).slice(-3);
-        return firstPart + secondPart;
-    }
 
-    /* method for adding unique ID to CSS selectors */
-    generateScopedRule(rule) {
-        let selectors = rule.selectorText.split(',');
-        let selectorsText = selectors.map(selector => {
-            let attr = `exp-${this.getUuid()}`;
-            this.addAttributes(selector.trim(), attr);
-            if (this.select(selector.trim()).length > 0) {
-                return `${selector}[${attr}]`;
-            }
-            return  `${selector}`;
-        });
 
-        return `${selectorsText.join()} { ${rule.style.cssText} }`;
-    }
-
-    /* move methods from METHODS option to `this` scope */
-    moveMethods() {
-        if (this.methods === null) return;
-
-        for (var key of Object.keys(this.methods)) {
-            this.model[key] = this.methods[key];
-        }
-    }
 
     /* method for updating all exp-binds */
     updateBindings(key, value) {
@@ -527,8 +582,14 @@ class Exp {
                     },
                     fillWithRandom: true
                 };
-
-                this.sdk.getRecommendation(options);
+                
+                if (this.sdk && this.sdk.getRecommendation) {
+                    this.sdk.getRecommendation(options);
+                } else {
+                    if (this.recommendations[keys[i]].loadingKey !== undefined) {
+                        this.model[this.recommendations[keys[i]].loadingKey] = true;
+                    }
+                }
             }
         }
     }
@@ -607,35 +668,7 @@ class Exp {
         });
     }
 
-    /* initial binding of input models */
-    bindModels() {
-        let selector = ["email", "number", "search", "tel", "text", "url", "checkbox", "radio"].map(input => {
-            return `input[type="${input}"][exp-model]`;
-        });
-        selector = selector.concat(["textarea[exp-model]", "select[exp-model]"]);
 
-        var inputs = this.select(selector.join());
-
-        inputs.forEach(input => {
-            const model = input.getAttribute("exp-model");
-            const type = input.getAttribute("type");
-            
-            /* handle different input types */
-            if (type === "checkbox") {
-                input.addEventListener("change", event => {
-                    this.model[model] = event.target.checked;
-                });
-            } else if (type === "radio") {
-                input.addEventListener("change", event => {
-                    this.model[model] = event.target.value;
-                });
-            } else {
-                input.addEventListener("input", event => {
-                    this.model[model] = event.target.value;
-                });
-            }
-        });
-    }
 
     updateAttributes(key, value) {
         let selector = this.supportedAttributes.map(attr => {
@@ -670,28 +703,6 @@ class Exp {
         })
     }
 
-    /* initial bindings of methods */
-    bindMethods(template = undefined) {
-        var that = this;
-        let supportedEvents = ["click", "submit", "input", "hover", "blur"];
-        let selector = supportedEvents.map(event => {
-            return `*[exp-${event}]`;
-        });
-
-        var events = this.select(selector.join(), template);
-
-        events.forEach(el => {
-           supportedEvents.forEach(event => {
-               var method = el.getAttribute('exp-' + event);
-               if (method === null || !(method in that.methods)) return;
-
-               el.addEventListener(event, function(e) {
-                   that.methods[method].apply(that.model, [e]);
-               });
-           });
-       });
-    }
-
     bindAction() {
         let selector = `[exp-action]`;
         var elements = this.select(selector);
@@ -702,6 +713,18 @@ class Exp {
                 }
             });
         })
+    }
+
+    bindRefs() {
+        let selecor = `[exp-ref]`;
+        var elements = this.select(selecor);
+        elements.forEach(el => {
+            let val = el.getAttribute('exp-ref');
+
+            if (val && val !== '') {
+                this.model.$refs[val] = el
+            }
+        });
     }
 
     bindClose() {
@@ -721,7 +744,9 @@ class Exp {
     }
 
     addAnimationClass(className = "exponea-animate") {
+        if (this.app === null) return;
         if (this.app.classList) {
+            this.app.setAttribute(this.bannerId, '');
             this.app.classList.add(className);
         } else {
             this.app.className += ' ' + className;
@@ -729,6 +754,7 @@ class Exp {
     }
 
     removeAnimationClass(className = "exponea-animate") {
+        if (this.app === null) return;
         if (this.app.classList) {
             this.app.classList.remove(className);
         } else {
@@ -737,6 +763,7 @@ class Exp {
     }
 
     addBranding(color = "black"){
+        if (this.app === null) return;
         var branding = document.createElement('object');
         var uuid = this.getUuid();
         this.app.appendChild(branding);
@@ -745,19 +772,36 @@ class Exp {
     }
 
     /**
-     * helper selecor functions
+     * Helper functions
      */
+
+    /* Return Array from DOM elements collection list */
     listify(list) {
         return Array.prototype.slice.call(list);
     }
-
+    /* Return array from querySelector */
     select(selector, scope = this.app) {
+        if (scope === null) return []
         var elements = this.listify(scope.querySelectorAll(selector));
         if (scope.matches(selector)) {
             elements.push(scope);
         }
 
         return elements;
+    }
+    /* Helper method for adding attribute, used by CSS scoping */
+    addAttributes(selector, attr, val = "") {
+        this.select(selector).forEach(el => {
+            el.setAttribute(attr, val);
+        })
+    }
+    /* Helper method for generating unique IDs, used by CSS scoping */
+    getUuid() {
+        var firstPart = (Math.random() * 46656) | 0;
+        var secondPart = (Math.random() * 46656) | 0;
+        firstPart = ("000" + firstPart.toString(36)).slice(-3);
+        secondPart = ("000" + secondPart.toString(36)).slice(-3);
+        return firstPart + secondPart;
     }
 }
 
