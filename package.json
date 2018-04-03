@@ -1,11 +1,11 @@
 {
-  "name": "Exp",
-  "version": "1.0.0",
+  "name": "exp-framework",
+  "version": "0.0.2",
   "description": "",
-  "main": "Exp.js",
+  "main": "src/Exp.js",
   "scripts": {
     "start": "parcel serve src/index.html",
-    "build": "parcel build src/Exp.js ./lib"
+    "build": "parcel build src/Exp.js"
   },
   "repository": {
     "type": "git",
@@ -18,13 +18,8 @@
     "url": "https://github.com/hackal/Exp/issues"
   },
   "homepage": "https://github.com/hackal/Exp#readme",
-  "dependencies": {
-    "babel-preset-env": "^1.6.1",
-    "cross-env": "^5.1.4",
-    "parcel-bundler": "^1.6.2",
-    "typescript": "^2.7.2"
-  },
   "devDependencies": {
-    "babel-core": "^6.26.0"
+    "babel-preset-env": "^1.6.1",
+    "parcel-bundler": "^1.6.2"
   }
 }
