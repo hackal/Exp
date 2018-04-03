@@ -547,7 +547,7 @@ class Exp {
         let selectorsText = selectors.map(selector => {
             let attr = `exp-${this.getUuid()}`;
             this.addAttributes(selector.trim(), attr);
-            if (selector === ".exponea-animate") {
+            if (selector.includes(".exponea-animate")) {
                 return `${selector}[${this.bannerId}]`
             }
             if (this.select(selector.trim()).length > 0) {
