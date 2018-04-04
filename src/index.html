@@ -3,118 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.css">
     <title>Exp Framework Testing Ground</title>
-    <script>(function(d,b){if(!d.exponea){var a=function(a,g){function k(c){return function(){var e=arguments;""==a&&"initialize"==c&&e&&e[0].modify&&e[0].modify.overlay&&"loading"==b.readyState&&(b.write('<div id="__inf__overlay__" style="position:absolute;background:#fff;left:0;top:0;width:100%;height:100%;z-index:1000000"></div>'),setTimeout(function(){var a=b.getElementById("__inf__overlay__");a&&b.body.removeChild(a);res.__=!0},e[0].modify.delay||500));d.exponea._.push([a+c,arguments])}}var h=g.split(" "),f,c;res={_:[]};for(c=0;c<h.length;c++)f=h[c],res[f]=k(f);return res};d.exponea=a("","initialize identify update track trackLink trackEnhancedEcommerce getHtml showHtml showBanner showForm ping getAbTest");d.exponea.notifications=a("notifications.","isAvailable isSubscribed subscribe unsubscribe");var a=b.createElement("script"),g="https:"===b.location.protocol?"https:":"http:";a.type="text/javascript";a.async=!0;a.src=g+"//api.exponea.com/js/exponea.min.js";b.getElementsByTagName("head")[0].appendChild(a)}})(window,document);</script>
-    <!-- <script type="text/javascript">
-        exponea.initialize({
-            "token": "26c242f2-0b15-11e8-ba97-14187733e19e"
-        });
-    </script> -->
     <script src="./Exp.js"></script>
 </head>
 <body>
-    <div class="header" id="header">
-        <div class="top" exp-click="open">
-          <a href="#" class="navLink">&#9776;</a>
-        </div>
-        
-        <div class="nav" exp-ref="nav">
-          <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Store</a></li>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </div>
-      </div>
+<p>Exp testing</p>
+<div id="root" style="position:relative;">
+  <input type="text" exp-model="foo">
+  <p exp-bind="foo"></p>
+  <button exp-click="click">Click Me!</button>
+  <a exp-href="link">test link</a>
+</div>
 <script>
-    var banner = new Exp({
-      backdrop: true,
-      el: '#header',
-      methods: {
-        open: function() {
-          this.$refs.nav.style.height = 'auto'
-          var height = this.$refs.nav.offsetHeight;
-          this.$refs.nav.style.height = '0px'
-          this.$anim(this.$refs.nav, {height: height}, 0.4)
-        }
-      },
-      scoped: true,
-      style: `
-      .exponea-animate {
-        display: block;
-      }
-      .header {
-          background: #ff8330;
-          width: 500px;
-          margin: 50px auto;
-          position: relative;
-          display: none;
-        }
-
-        .header .top {
-          overflow: hidden;
-          box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        .header .top .navLink {
-          display: block;
-          padding: 10px;
-          color: #fff;
-          font-size: 130%;
-          float: left;
-          text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        .header .nav {
-          overflow: hidden;
-          height: 0; 
-        }
-
-        .header .nav ul {
-          padding: 10px 0px 10px 0px;
-        }
-
-        .header .nav ul li a {
-          padding: 10px;
-          color: #fff;
-          font-size: 90%;
-          text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
-          display: block;
-        }
-
-        .header .nav ul li a:hover {
-          background: rgba(0, 0, 0, 0.1);
-        }`
-    });
-    // document.querySelector('.navLink').addEventListener('click', function(e) {
-    //     e.preventDefault();
-    //     var nav = document.querySelector('.nav')
-    //     nav.style.height = 'auto'
-    //     var height = nav.offsetHeight;
-    //     nav.style.height = '0px'
-    //     banner.$anim(nav, {height: height}, 0.4)
-    // })
+var banner = new Exp({
+  el: "#root",
+  data: {
+    foo: "",
+    link: "https://www.google.cz"
+  },
+  methods: {
+    click: function() { alert(this.foo) }
+  }
+})
 </script>
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  outline: none;
-  list-style: none;
-  text-decoration: none;
-  font-family: segoe ui, helvetica neue, helvetica, arial, sans-serif;
-  line-height: 1;
-}
-
-body {
-  font-size: 16px;
-}
-</style>
 </body>
 </html>
