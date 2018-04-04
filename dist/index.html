@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exp Framework Testing Ground</title>
-  <script src="/dist/exp-framework.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exp Framework Testing Ground</title>
+    <script src="/dist/exp-framework.js"></script>
 </head>
 <body>
-  <div id="root">
-    <input type="text" exp-model="test">
-    <p exp-bind="test"></p>
-    <button exp-click="testmethod">Click me!</button>
-  </div>
+<p>Exp testing</p>
+<div id="root" style="position:relative;">
+  <input type="text" exp-model="foo">
+  <p exp-bind="foo"></p>
+  <button exp-click="click">Click Me!</button>
+  <a exp-href="link">test link</a>
+</div>
 <script>
 var banner = new Exp({
-  attach: "#root",
-  html: "<button exp-click='testmethod'>Test</button>",
-  scoped: false,
-  style: "button { background-color: green }",
+  el: "#root",
   data: {
-    test: ""
+    foo: "",
+    link: "https://www.google.cz"
   },
   methods: {
-    testmethod: () => alert("it works")
+    click: function() { alert(this.foo) }
   }
 })
 </script>
