@@ -13,13 +13,18 @@
   <p exp-bind="foo"></p>
   <button exp-click="click">Click Me!</button>
   <a exp-href="link">test link</a>
+  <div exp-for="item in items">
+    <span exp-bind="item.name"></span>
+    <span exp-bind="item.surname"></span>
+  </div>
 </div>
 <script>
 var banner = new Exp({
   el: "#root",
   data: {
     foo: "",
-    link: "https://www.google.cz"
+    link: "https://www.google.cz",
+    items: [{name: "Lukas", surname: "Cerny"}, {name: "Adam", surname: "Pavlisin"}]
   },
   methods: {
     click: function() { alert(this.foo) }

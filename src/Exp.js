@@ -155,6 +155,7 @@ class Exp {
         this.bindModels();
         this.bindMethods();
         this.bindAttributes();
+        this.bindFors();
 
         /* Renders optional objects alongside with banners */
         if (this.backdrop !== null) this.addBackdrop();
@@ -163,7 +164,6 @@ class Exp {
         this.addAnimationClass();
 
         
-        // this.bindFors();
         // this.loadRcm();
         // this.bindClose();
         // this.loaded();
@@ -321,6 +321,102 @@ class Exp {
         })
     }
 
+    /* Instantiates and binds exp-for with model */
+    bindFors() {
+        const expFors = this.select(`[exp-for], [exp-rcm]`);
+        expFors.forEach(expFor => {
+            /* Tokenize and parse attribute */
+            let attr = expFor.hasAttribute('exp-for') ? 'exp-for' : 'exp-rcm';
+            let key = expFor.getAttribute(attr).split(' ')[0];
+            let arrayName = expFor.getAttribute(attr).split(' ')[2];
+            let hash = 'e-' + this.getUuid();
+            let template = expFor.cloneNode(true);
+            /* Copy template into storage, with the root element */
+            if (arrayName in this.__storage.loopDefinitions) {
+                this.__storage.loopDefinitions[arrayName].push({
+                    template: template,
+                    root: expFor
+                });
+            } else {
+                this.__storage.loopDefinitions[arrayName] = [{
+                    template: template,
+                    root: expFor
+                }];
+            };
+            /* Check if array exists in model and render multiple templates */
+            if (this.model[arrayName]) {
+                this.model[arrayName].forEach(item => {
+                    this.renderNewElement(arrayName, key, item);
+                });
+            } else {
+                this.model[arrayName] = [];
+            }
+            /* Override the push method of array in the model for reactivity */
+            this.overridePush(this.model[arrayName], arrayName, key);
+        });
+    }
+
+    /* Renders a new element of an array */
+    renderNewElement(arrayName, key, item) {
+        const supportedAttributes = ["src", "href", "alt"];
+        /* Iterate through all exp-for instances linked to targeted array */
+        for (expForInstance of this.__storage.loopDefinitions[arrayName]) {
+            /* Clone the template and populate it with element data */
+            var template = expForInstance.template.cloneNode(true);
+            let attrSelector = supportedAttributes.map(attr => {
+                return `*[exp-${attr}]`;
+            });
+            const expAttrs = this.select(attrSelector.join(), template);
+            const expBinds = this.select(`[exp-bind]`, template);
+            /* Override attributes of the node */
+            expAttrs.forEach(el => {
+                supportedAttributes.forEach(attr => {
+                    const val = el.getAttribute('exp-' + attr);
+                    if (val === null) return;
+    
+                    if (val.indexOf('.') == -1) {
+                        el[attr] = item;
+                    } else {
+                        const keys = val.split('.');
+                        const value = this.findLastField(keys.slice(1), item);
+                        el[attr] = value;
+                    };
+                });
+            });
+            /* Override inner value of the node */
+            expBinds.forEach(el => {
+                const val = el.getAttribute('exp-bind');
+                if (val.indexOf('.') == -1) {
+                    el.textContent = item;
+                } else {
+                    const keys = val.split('.');
+                    var value = this.findLastField(keys.slice(1), item);
+                    el.textContent = value
+                }
+            });
+            /* Append all children of the newly populated template */
+            let children = this.listify(template.childNodes)
+            for (let i=0; i<children.length; i++) {
+                if (children[i].nodeType == 1){
+                    expForInstance.root.appendChild(children[i]);
+                }
+            } 
+        }
+    }
+
+    /* Override the push function with reactivity functionality */
+    overridePush(array, arrayName, key) {
+        let self = this;
+        array.push = (_ => {
+            var original = Array.prototype.push;
+            return function() {
+                const ret = original.apply(this, arguments);
+                self.renderNewElement(arrayName, key, arguments[0]);
+                return ret;
+            };
+        })();
+    }
+
     /* Method for inserting stylesheet */
     addStyle(css, disabled = false){
         if (this.app === null) return;
@@ -400,131 +496,6 @@ class Exp {
             this.app.className += ' ' + className;
         }
     }
-
-
-    bindFors() {
-        const expFors = this.select(`[exp-for], [exp-rcm]`);
-        expFors.forEach(expFor => {
-            /* Tokenize and parse attribute */
-            let attr = expFor.hasAttribute('exp-for') ? 'exp-for' : 'exp-rcm';
-            let key = expFor.getAttribute(attr).split(' ')[0];
-            let arrayName = expFor.getAttribute(attr).split(' ')[2];
-            /* Generate hash and clone */
-            let hash = 'e-' + this.getUuid();
-            expFor.setAttribute(hash, '');
-            let template = expFor.cloneNode(true);
-            /* Copy template into storage */
-            this.__storage.loopDefinitions[arrayName] = [{
-                template: template,
-                hash: hash,
-                lastElement: expFor
-            }];
-            /* Check if array exists in model and render multiple templates */
-            if (this.model[arrayName]) {
-                this.model[arrayName].forEach(item => {
-                    this.renderForElement(arrayName, key, item);
-                });
-            } else {
-                this.model[arrayName] = [];
-            }
-
-
-
-            // this.__storage.initializedLoops[arrayName] = true;
-            
-            // this.__storage.initializedLoops[arrayName] = false;
-        });
-    }
-
-    /* Override the push function with reactivity functionality */
-    overridePush(array, arrayName, key) {
-        let self = this;
-        array.push = (_ => {
-            var original = Array.prototype.push;
-            return function() {
-                const ret = original.apply(this, arguments);
-                self.updateFors(arrayName, key, arguments[0]);
-                return ret;
-            };
-        })();
-    }
-
-    renderForElements(arrayName, key, item) {
-        const supportedAttributes = ["src", "href", "alt"];
-
-        var template = this.__storage.loopDefinitions[arrayName].template.cloneNode(true);
-        const hash = this.__storage.loopDefinitions[arrayName].hash;
-
-        let attrSelector = supportedAttributes.map(attr => {
-            return `*[exp-${attr}]`;
-        });
-
-        const expFors = this.select(`[exp-for="${key} in ${arrayName}"][${hash}], [exp-rcm="${key} in ${arrayName}"][${hash}]`);
-        const expForRefs = this.select(`[exp-for-ref="${key} in ${arrayName}"][${hash}]`);
-        const expAttrs = this.select(attrSelector.join(), template);
-        const expBinds = this.select(`[exp-bind]`, template);
-
-        expAttrs.forEach(el => {
-            supportedAttributes.forEach(attr => {
-                const val = el.getAttribute('exp-' + attr);
-                if (val === null) return;
-
-                if (val.indexOf('.') == -1) {
-                    el[attr] = item;
-                } else {
-                    const keys = val.split('.');
-                    const value = this.findLastField(keys.slice(1), item);
-                    el[attr] = value;
-                };
-            });
-        });
-
-        expBinds.forEach(el => {
-            const val = el.getAttribute('exp-bind');
-            if (val.indexOf('.') == -1) {
-                el.textContent = item;
-            } else {
-                const keys = val.split('.');
-                var value = this.findLastField(keys.slice(1), item);
-                el.textContent = value
-            }
-        });
-
-        expFors.forEach(expFor => {
-            var el = document.createElement('div');
-            template.removeAttribute('exp-for');
-            template.removeAttribute('exp-rcm');
-            template.removeAttribute(hash);
-            el.innerHTML = template.outerHTML.trim();
-            expFor.parentNode.replaceChild(el.firstChild, expFor);
-            this.bindMethods(el);
-        });
-
-        expForRefs.forEach(ref => {
-            let el = document.createElement('div');
-            if (template.tagName == 'TR') {
-                el = document.createElement('tbody');
-            }
-            if (template.tagName == 'TD') {
-                el = document.createElement('tr');
-            }
-            template.removeAttribute('exp-for');
-            template.removeAttribute('exp-rcm');
-            el.innerHTML = template.outerHTML.trim();
-            ref.removeAttribute('exp-for-ref');
-            ref.removeAttribute(hash);
-            el.firstChild.setAttribute('exp-for-ref', `${key} in ${arrayName}`);
-            el.firstChild.setAttribute(hash, '');
-            ref.parentNode.insertBefore(el.firstChild, ref.nextSibling);
-            this.bindMethods(el);
-        });
-    }
-
-
-
-
-
-
 
 
     // END HERE
