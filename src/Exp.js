@@ -374,7 +374,7 @@ class Exp {
 
                     /* rule is media query */
                     if (rule instanceof CSSMediaRule) {
-                        scopedStyle = scopedStyle + `@media${rule.conditionText} {`
+                        scopedStyle = scopedStyle + `@media ${rule.conditionText} {`
                         this.listify(rule.cssRules).forEach(rule => {
                             scopedStyle = scopedStyle + this.generateScopedRule(rule);
                         });
