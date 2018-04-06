@@ -145,29 +145,39 @@ class Exp {
         if (false) { /* TODO: How to check control_group from context */
             this.loaded();
         }
+
         /* Initialize model */
         this.initializeModel(this.data);
 
         /* Render Exp banner */
         this.render();
 
-        /* Bind all models and methods */
+        /* Create the main tunnel of bindings between HTML with JS */
         this.bindModels();
         this.bindMethods();
         this.bindAttributes();
+        this.bindClose();
         this.bindFors();
+        this.bindIfs()
+
+        /* Load recommendations */
+        this.loadRecommendations()
 
         /* Renders optional objects alongside with banners */
         if (this.backdrop !== null) this.addBackdrop();
         if (this.branded !== false) this.addBranding();
-
+        /* Adds exponea-animate class to app */
         this.addAnimationClass();
 
-        
-        // this.loadRcm();
-        // this.bindClose();
-        // this.loaded();
-        // return this.model;
+        /* Track show if tracking is set to true  */
+        if (this.tracking && this.sdk !== null && this.context !== null) {
+            this.sdk.track('banner', this.getEventProperties('show', false));
+        }
+
+        /* Call mounted function if set */
+        if (this.mounted !== null && !this.control_group) this.mounted.call(this.model);
+
+        return this.model;
     }
 
     /* Initalize model from data */
@@ -321,6 +331,49 @@ class Exp {
         })
     }
 
+    /* Binds the close button with tracking and deleting functionality */
+    bindClose() {
+        let selector = `[exp-close]`;
+        var elements = this.select(selector);
+        elements.forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                this.removeBanner();
+                /* Track 'close' if tracking is set to true */
+                if (this.tracking && this.sdk !== null && this.context !== null) {
+                    this.sdk.track('banner', this.getEventProperties('close'));
+                }
+            });
+        })
+    }
+
+    /* Bind exp-ifs */ 
+    bindIfs() {
+        const expIfs = this.select(`[exp-if]`);
+        expIfs.forEach(el => {
+            /* BUG: does not check the original display value, assumes block */
+            const attr = el.getAttribute("exp-if");
+            if (this.model[attr] !== null) {
+                el.style.display = (this.model[attr] ? "block" : "none");
+            } else {
+                this.model[attr] = true;
+            }
+        });
+    }
+
+    /* Creates access to elements from model scope */
+    bindRefs() {
+        let selecor = `[exp-ref]`;
+        var elements = this.select(selecor);
+        elements.forEach(el => {
+            let val = el.getAttribute('exp-ref');
+            if (val && val !== '') {
+                this.model.$refs[val] = el
+            }
+        });
+    }
+
     /* Instantiates and binds exp-for with model */
     bindFors() {
         const expFors = this.select(`[exp-for], [exp-rcm]`);
@@ -343,6 +396,10 @@ class Exp {
                     root: expFor
                 }];
             };
+            /* Remove all children elements */
+            while (expFor.firstChild) {
+                expFor.removeChild(expFor.firstChild);
+            }
             /* Check if array exists in model and render multiple templates */
             if (this.model[arrayName]) {
                 this.model[arrayName].forEach(item => {
@@ -355,6 +412,60 @@ class Exp {
             this.overridePush(this.model[arrayName], arrayName, key);
         });
     }
+
+    /* Method for updating all exp-binds */
+    updateBindings(key, value) {
+        const bindings = this.select(`*[exp-bind="${key}"]`);
+        bindings.forEach(el => {
+            el.textContent = value;
+        });
+    }
+
+    /* Method for updating input exp-models */
+    updateModels(key, value) {
+        const modelBindings = this.select(`*[exp-model="${key}"]`);
+        modelBindings.forEach(input => {
+            const model = input.getAttribute("exp-model");
+            const type = input.getAttribute("type");
+            /* Handle different input types */
+            if (type == "checkbox") {
+                input.checked = !!value;
+            } else if (type == "radio") {
+                if (input.value == value) input.checked = true;
+            } else {
+                input.value = value;
+            }
+        });
+    }
+
+    /* Method for updating exp-ifs */ 
+    updateIfs(key, value) {
+        const expIfs = this.select(`*[exp-if="${key}"]`);
+        expIfs.forEach(el => {
+            /* BUG: does not check the original display value, assumes block */
+            el.style.display = (value ? "block" : "none");
+        });
+    }
+
+    /* Method for updating attributes */
+    updateAttributes(key, value) {
+        const supportedAttributes = ["src", "href", "alt"];
+        let selector = supportedAttributes.map(attr => {
+            return `*[exp-${attr}="${key}"]`;
+        });
+        const that = this;
+        const elements = this.select(selector.join());
+
+        elements.forEach(el => {
+            supportedAttributes.forEach(attr => {
+                var val = el.getAttribute('exp-' + attr);
+                if (val === null || !(val in that.model)) return;
+                
+                el[attr] = that.model[val];
+            })
+        });
+    }
+
 
     /* Renders a new element of an array */
     renderNewElement(arrayName, key, item) {
@@ -497,195 +608,48 @@ class Exp {
         }
     }
 
-
-    // END HERE
-
-
-
-    /* parse POSITION string */
-    setPositionFromString(position, el) {
-        const offset = "20px";
-        const positionStyles = {
-            middle: {
-                "left": "50%",
-                "top": "50%",
-                "transform": "translate(-50%,-50%)"
+    /* Loads Exponea recommendation and inserts into model */
+    loadRecommendations() {
+        Object.keys(this.recommendations).forEach((rcm) => {
+            /* Has to already exist due to exp-for initialization */
+            if (this.model[rcm]) {
+                /* Option parameters according to Exponea JS SDK */
+                var options = {
+                    recommendationId: this.recommendations[rcm].id,
+                    size: this.recommendations[rcm].total,
+                    callback: data => {
+                        /* Push to model */
+                        if (data && data.length > 0) {
+                            data.forEach(item => {
+                                this.model[rcm].push(item)
+                            })
+                        }
+                        /* Update loading key */
+                        if (this.recommendations[rcm].loadingKey !== undefined) {
+                            this.model[this.recommendations[rcm].loadingKey] = true; /* TODO: What is it for? */
+                        }
+                    },
+                    fillWithRandom: true
+                };
+                console.log(this.sdk.getRecommendation)
+                if (this.sdk && this.sdk.getRecommendation) {
+                    console.log(options)
+                    this.sdk.getRecommendation(options);
+                } else {
+                    if (this.recommendations[rcm].loadingKey !== undefined) {
+                        this.model[this.recommendations[rcm].loadingKey] = true;
+                    }
+                }
             }
-        }
-        let positions = position.split(' ');
-        positions.forEach(pos => {
-            if (pos in positionStyles) {
-                this.setStyleFromObject(positionStyles[pos], el);
-            } else {
-                let styleObj = {}
-                styleObj[pos] = offset
-                this.setStyleFromObject(styleObj, el);
-            }
-        });
+        })
     }
 
-
-
-    /* call MOUNTED lifecycle hook */
-    loaded() {
-        /* track 'show' if tracking is set to true */
-        if (this.tracking && this.sdk !== null && this.context !== null) {
-            this.sdk.track('banner', this.getEventProperties('show', false));
-        }
-        if (this.mounted !== null && !this.control_group) this.mounted.call(this.model);
-    }
-
-    /* remove banner */
+    /* Remove banner */
     removeBanner() {
         if (this.app === null) return
         this.app.parentNode.removeChild(this.app);
         if (this.backdrop !== null) this.backdrop.parentNode.removeChild(this.backdrop);
     }
-
-
-
-    /* not used, not sure why it is here */
-    getSelectorText(rules) {
-        var ruleList = [];
-        Array.prototype.slice.call(rules).forEach(rule => {
-            ruleList.push(rule);
-        });
-    }
-
-
-
-
-
-    /* method for updating all exp-binds */
-    updateBindings(key, value) {
-        const bindings = this.select(`*[exp-bind="${key}"]`);
-
-        bindings.forEach(el => {
-            el.textContent = value;
-        });
-    }
-
-
-
-
-
-
-
-    loadRcm() {
-    	const keys = Object.keys(this.recommendations);
-        for (let i = 0; i < keys.length; i++) {
-            if (this.model[keys[i]]) {
-                var options = {
-                    recommendationId: this.recommendations[keys[i]].id,
-                    size: this.recommendations[keys[i]].total,
-                    callback: data => {
-                        if (data && data.length > 0) {
-                            data.forEach(item => {
-                                this.model[keys[i]].push(item)
-                            })
-                        }
-                        if (this.recommendations[keys[i]].loadingKey !== undefined) {
-                            this.model[this.recommendations[keys[i]].loadingKey] = true;
-                        }
-                    },
-                    fillWithRandom: true
-                };
-                
-                if (this.sdk && this.sdk.getRecommendation) {
-                    this.sdk.getRecommendation(options);
-                } else {
-                    if (this.recommendations[keys[i]].loadingKey !== undefined) {
-                        this.model[this.recommendations[keys[i]].loadingKey] = true;
-                    }
-                }
-            }
-        }
-    }
-
-
-
-    /* method for updating input exp-models */
-    updateModels(key, value) {
-        const modelBindings = this.select(`*[exp-model="${key}"]`);
-
-        modelBindings.forEach(input => {
-            const model = input.getAttribute("exp-model");
-            const type = input.getAttribute("type");
-            
-            /* handle different input types */
-            if (type == "checkbox") {
-                input.checked = !!value;
-            } else if (type == "radio") {
-                if (input.value == value) input.checked = true;
-            } else {
-                input.value = value;
-            }
-        });
-    }
-
-    /**
-     * method for updating exp-ifs
-     * possible bug: doesn't check the original display value, assumes block
-     */ 
-    updateIfs(key, value) {
-        const expIfs = this.select(`*[exp-if="${key}"]`);
-
-        expIfs.forEach(el => {
-            el.style.display = (value ? "block" : "none");
-        });
-    }
-
-
-
-    updateAttributes(key, value) {
-        const supportedAttributes = ["src", "href", "alt"];
-        let selector = supportedAttributes.map(attr => {
-            return `*[exp-${attr}="${key}"]`;
-        });
-        const that = this;
-        const elements = this.select(selector.join());
-
-        elements.forEach(el => {
-            supportedAttributes.forEach(attr => {
-                var val = el.getAttribute('exp-' + attr);
-                if (val === null || !(val in that.model)) return;
-                
-                el[attr] = that.model[val];
-            })
-        });
-    }
-
-    bindRefs() {
-        let selecor = `[exp-ref]`;
-        var elements = this.select(selecor);
-        elements.forEach(el => {
-            let val = el.getAttribute('exp-ref');
-
-            if (val && val !== '') {
-                this.model.$refs[val] = el
-            }
-        });
-    }
-
-    bindClose() {
-        let selector = `[exp-close]`;
-        var elements = this.select(selector);
-        elements.forEach(el => {
-            el.addEventListener('click', (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                this.removeBanner();
-                /* track 'close' if tracking is set to true */
-                if (this.tracking && this.sdk !== null && this.context !== null) {
-                    this.sdk.track('banner', this.getEventProperties('close'));
-                }
-            });
-        })
-    }
-
-
-
-
 
     /**
      * Helper functions
