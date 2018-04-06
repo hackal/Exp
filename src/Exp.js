@@ -484,7 +484,6 @@ class Exp {
                 supportedAttributes.forEach(attr => {
                     const val = el.getAttribute('exp-' + attr);
                     if (val === null) return;
-    
                     if (val.indexOf('.') == -1) {
                         el[attr] = item;
                     } else {
