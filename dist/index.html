@@ -2,59 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exp Framework Testing Ground</title>
     <script src="/dist/exp-framework.js"></script>
-    <script>(function(d,b){if(!d.exponea){var a=function(a,g){function k(c){return function(){var e=arguments;""==a&&"initialize"==c&&e&&e[0].modify&&e[0].modify.overlay&&"loading"==b.readyState&&(b.write('<div id="__inf__overlay__" style="position:absolute;background:#fff;left:0;top:0;width:100%;height:100%;z-index:1000000"></div>'),setTimeout(function(){var a=b.getElementById("__inf__overlay__");a&&b.body.removeChild(a);res.__=!0},e[0].modify.delay||500));d.exponea._.push([a+c,arguments])}}var h=g.split(" "),f,c;res={_:[]};for(c=0;c<h.length;c++)f=h[c],res[f]=k(f);return res};d.exponea=a("","initialize identify update track trackLink getRecommendation trackEnhancedEcommerce getHtml showHtml showBanner showForm ping getAbTest");d.exponea.notifications=a("notifications.","isAvailable isSubscribed subscribe unsubscribe");var a=b.createElement("script"),g="https:"===b.location.protocol?"https:":"http:";a.type="text/javascript";a.async=!0;a.src=g+"//api.exponea.com/js/exponea.min.js";b.getElementsByTagName("head")[0].appendChild(a)}})(window,document);</script>
-<script type="text/javascript">
-    exponea.initialize({
-        "token": "26c242f2-0b15-11e8-ba97-14187733e19e",
-        "ping": {
-            "enabled": false
-        },
-        "track": {
-            "google_analytics": false
-        }
-        //, customer: window.loggedInCustomer // replace window.loggedInCustomer with id of your web site customer, e.g. "john.smith@gmail.com"
-});
-</script>
 </head>
 <body>
-<p>Exp testing</p>
-<!-- <div id="root" style="position:relative;">
-  <input exp-if="iftest" type="text" exp-model="foo">
-  <p exp-bind="foo"></p>
-  <button exp-click="click">Click Me!</button>
-  <a exp-href="link">test link</a>
-  <div exp-for="item in products" exp-if="isLoaded">
-    <p exp-bind="item.name"></p>
-    <p exp-bind="item.price"></p>
-    <a exp-href="item.url">click</a>
+  <div id="root">
+    <input type="text" exp-model="foo">
+    <p exp-bind="foo"></p>
+    <button exp-click="click">Click Me!</button>
+    <table exp-for="person in people">
+      <tr>
+        <td exp-bind="person.name"></td>
+        <td exp-bind="person.surname"></td>
+      </tr>
+    </table>
   </div>
-</div> -->
-<script>
-// var banner = new Exp({
-//   el: "#root",
-//   context: { sdk: exponea },
-//   recommendations: {
-//     products: {
-//       id: '5aa4514d8304340f209859f9',
-//       total: 5,
-//       loadingKey: 'isLoaded'
-//     }
-//   },
-//   tracking: true,
-//   data: {
-//     foo: "",
-//     iftest: false,
-//     isLoaded: false,
-//     link: "https://www.google.cz",
-//     items: [{name: "Lukas", surname: "Cerny"}, {name: "Adam", surname: "Pavlisin"}]
-//   },
-//   methods: {
-//     click: function() { alert(this.foo) }
-//   }
-// })
-</script>
+  <script>
+    var banner = new Exp({
+      el: "#root",
+      data: {
+        foo: "",
+        people: [{name: "Lukas", surname: "Cerny"}, {name: "Adam", surname: "Pavlisin"}]
+      }
+    })
+  </script>
 </body>
 </html>
