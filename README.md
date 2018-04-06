@@ -12,6 +12,7 @@ Remove anim
 Remove control group
 Remove validate email
 Remove action
+Remove setpositionFromstring
 
 Issues:
 Methods - Arrow functions in methods settings do not have scope to model
