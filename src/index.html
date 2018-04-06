@@ -1,30 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Exp Framework Testing Ground</title>
-    <script src="./Exp.js"></script>
+  <meta charset="UTF-8">
+  <title>Exp Framework Testing Ground</title>
+  <script src="./Exp.js"></script>
 </head>
 <body>
   <div id="root">
-    <input type="text" exp-model="foo">
-    <p exp-bind="foo"></p>
-    <button exp-click="click">Click Me!</button>
-    <table exp-for="person in people">
-      <tr>
-        <td exp-bind="person.name"></td>
-        <td exp-bind="person.surname"></td>
-      </tr>
-    </table>
+    <input type="text" exp-model="string"><span exp-bind="string"></span>
+    <br>
+    <button exp-click="addNumber">Add number!</button>
+    <div exp-for="number in numbers">
+      <p exp-bind="number"></p>
+    </div>
   </div>
   <script>
-    var banner = new Exp({
-      el: "#root",
-      data: {
-        foo: "",
-        people: [{name: "Lukas", surname: "Cerny"}, {name: "Adam", surname: "Pavlisin"}]
+  var banner = new Exp({
+    el: "#root",
+    data: {
+      string: "",
+      counter: 1,
+      numbers: []
+    },
+    methods: {
+      addNumber: function() {
+        this.numbers.push(this.counter++);
       }
-    })
+    }
+  })
   </script>
 </body>
 </html>

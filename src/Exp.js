@@ -247,7 +247,7 @@ class Exp {
                     }
                     /* Rule is media query */
                     if (rule instanceof CSSMediaRule) {
-                        scopedStyle = scopedStyle + `@media${rule.conditionText} {`
+                        scopedStyle = scopedStyle + `@media ${rule.conditionText} {`
                         this.listify(rule.cssRules).forEach(rule => {
                             scopedStyle = scopedStyle + this.generateScopedRule(rule);
                         });
@@ -625,14 +625,13 @@ class Exp {
                         }
                         /* Update loading key */
                         if (this.recommendations[rcm].loadingKey !== undefined) {
-                            this.model[this.recommendations[rcm].loadingKey] = true; /* TODO: What is it for? */
+                            this.model[this.recommendations[rcm].loadingKey] = true;
                         }
                     },
                     fillWithRandom: true
                 };
-                console.log(this.sdk.getRecommendation)
+                /* Generate recommendation */
                 if (this.sdk && this.sdk.getRecommendation) {
-                    console.log(options)
                     this.sdk.getRecommendation(options);
                 } else {
                     if (this.recommendations[rcm].loadingKey !== undefined) {
