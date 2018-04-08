@@ -25,7 +25,7 @@ class Exp {
         this.scoped = settings.scoped || false;
         /* Function triggered after rendering the banner */
         this.mounted = settings.mounted || null;
-        /* DOM element onto which Exp app will be placed */
+        /* Backdrop in front of which Exp app will be rendered */
         this.backdrop = settings.backdrop || null;
         /* Adding Exponea branding options, by default black */
         if (settings.branded === undefined || settings.branded === null || (settings.branded && settings.branded !== "black" && settings.branded !== "white")) {
@@ -81,7 +81,7 @@ class Exp {
             initializedLoops: {}
         };
 
-        /* Tracking by default false. Tracks show/close automatically. */
+        /* Tracking by default true. Tracks show/close automatically. */
         if (settings.tracking === undefined) {
             this.tracking = true;
         } else {
@@ -354,10 +354,11 @@ class Exp {
         expIfs.forEach(el => {
             /* BUG: does not check the original display value, assumes block */
             const attr = el.getAttribute("exp-if");
-            if (this.model[attr] !== null) {
+            if (this.model[attr] !== null && this.model[attr] !== undefined) {
                 el.style.display = (this.model[attr] ? "block" : "none");
             } else {
-                this.model[attr] = true;
+                throw `exp-if attribute ${attr} is not defined in model.`
+                this.model[attr] = null;
             }
         });
     }
