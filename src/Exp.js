@@ -385,22 +385,24 @@ class Exp {
             let arrayName = expFor.getAttribute(attr).split(' ')[2];
             let hash = 'e-' + this.getUuid();
             let template = expFor.cloneNode(true);
+            /* Delete exp-for attribute */
+            template.removeAttribute("exp-for");
             /* Copy template into storage, with the root element */
             if (arrayName in this.__storage.loopDefinitions) {
                 this.__storage.loopDefinitions[arrayName].push({
                     template: template,
-                    root: expFor
+                    parentElement: expFor.parentNode,
+                    siblingElement: expFor.nextElementSibling
                 });
             } else {
                 this.__storage.loopDefinitions[arrayName] = [{
                     template: template,
-                    root: expFor
+                    parentElement: expFor.parentNode,
+                    siblingElement: expFor.nextElementSibling
                 }];
             };
             /* Remove all children elements */
-            while (expFor.firstChild) {
-                expFor.removeChild(expFor.firstChild);
-            }
+            expFor.remove();
             /* Check if array exists in model and render multiple templates */
             if (this.model[arrayName]) {
                 this.model[arrayName].forEach(item => {
@@ -506,12 +508,7 @@ class Exp {
                 }
             });
             /* Append all children of the newly populated template */
-            let children = this.listify(template.childNodes)
-            for (let i=0; i<children.length; i++) {
-                if (children[i].nodeType == 1){
-                    expForInstance.root.appendChild(children[i]);
-                }
-            } 
+            expForInstance.parentElement.insertBefore(template, expForInstance.siblingElement);
         }
     }
 
