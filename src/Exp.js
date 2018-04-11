@@ -208,6 +208,11 @@ class Exp {
                 this.model[key] = this.methods[key];
             }
         }
+
+        /* Bind helper methods */
+        this.model.$anim = require('./helpers/anim.js');
+        this.model.$validateEmail = require('./helpers/validateEmail.js');
+
         /* Bind special methods to be used in `this` scope */
         this.model.removeBanner = this.removeBanner.bind(this, this.app);
         this.model.sdk = this.sdk;
