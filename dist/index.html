@@ -3,17 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>Exp Framework Testing Ground</title>
-  <script src="/dist/exp-framework.js"></script>
+  <script src="/dist/Exp.js"></script>
 </head>
 <body>
   <div id="root">
     <input type="text" exp-model="string"><span exp-bind="string"></span>
     <br>
     <button exp-click="addNumber">Add number!</button>
-    <div exp-for="number in numbers">
-      <p exp-bind="number"></p>
-    </div>
-    <p></p>
     <div exp-for="number in numbers">
       <p exp-bind="number"></p>
     </div>
