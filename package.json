@@ -1,7 +1,7 @@
 {
-  "name": "exp-framework",
-  "version": "0.0.2",
-  "description": "",
+  "name": "Exp",
+  "version": "1.1.0",
+  "description": "Lightweight framework designed for building banner in Exponea platform.",
   "main": "src/Exp.js",
   "scripts": {
     "start": "parcel serve src/index.html",
@@ -12,7 +12,7 @@
     "url": "git+https://github.com/hackal/Exp.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Exponea Integrators Team",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/hackal/Exp/issues"
