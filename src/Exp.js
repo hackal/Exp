@@ -393,25 +393,22 @@ class Exp {
             /* Delete exp-for attribute */
             template.removeAttribute("exp-for");
             /* Copy template into storage, with the root element */
+            const expForInstance = {
+                template: template,
+                parentElement: expFor.parentNode,
+                siblingElement: expFor.nextElementSibling
+            };
             if (arrayName in this.__storage.loopDefinitions) {
-                this.__storage.loopDefinitions[arrayName].push({
-                    template: template,
-                    parentElement: expFor.parentNode,
-                    siblingElement: expFor.nextElementSibling
-                });
+                this.__storage.loopDefinitions[arrayName].push(expForInstance);
             } else {
-                this.__storage.loopDefinitions[arrayName] = [{
-                    template: template,
-                    parentElement: expFor.parentNode,
-                    siblingElement: expFor.nextElementSibling
-                }];
+                this.__storage.loopDefinitions[arrayName] = [expForInstance];
             };
             /* Remove all children elements */
             expFor.remove();
             /* Check if array exists in model and render multiple templates */
             if (this.model[arrayName]) {
                 this.model[arrayName].forEach(item => {
-                    this.renderNewElement(arrayName, key, item);
+                    this.renderNewElement(arrayName, key, item, expForInstance);
                 });
             } else {
                 this.model[arrayName] = [];
@@ -476,10 +473,16 @@ class Exp {
 
 
     /* Renders a new element of an array */
-    renderNewElement(arrayName, key, item) {
+    renderNewElement(arrayName, key, item, expFor = null) {
         const supportedAttributes = ["src", "href", "alt"];
+        var expFors;
+        if (expFor !== null) {
+            expFors = [expFor];
+        } else {
+            expFors = this.__storage.loopDefinitions[arrayName];
+        }
         /* Iterate through all exp-for instances linked to targeted array */
-        for (expForInstance of this.__storage.loopDefinitions[arrayName]) {
+        for (expForInstance of expFors) {
             /* Clone the template and populate it with element data */
             var template = expForInstance.template.cloneNode(true);
             let attrSelector = supportedAttributes.map(attr => {
