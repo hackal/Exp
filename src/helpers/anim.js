@@ -34,7 +34,7 @@ var anim = function(A) {
       //if the 1st param is a number then treat it as a timeout period.
       //If the node reference is null, then we skip it and run the next callback
       //so that we can continue with the animation without throwing an error.
-      if(n > 0 || !n) g = {}, t = 0, cb(q = [[n || 0]]);
+      if(n > 0 || !n) g = {}, t = 0, cb(q = [].push([n || 0]));
     
       //firefox don't allow reading shorthand CSS styles like "margin" so
       //we have to expand them to be "margin-left", "margin-top", etc.
