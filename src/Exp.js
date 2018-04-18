@@ -10,6 +10,8 @@ class Exp {
         this.data = settings.data || {};
         /* Controller methods */
         this.methods = settings.methods || {};
+        /* Filters */
+        this.filters = settings.filters || {};
         /* Initializing model */
         this.model = {};
 
@@ -146,11 +148,11 @@ class Exp {
             this.loaded();
         }
 
-        /* Initialize model */
-        this.initializeModel(this.data);
-
         /* Render Exp banner */
         this.render();
+
+        /* Initialize model */
+        this.initializeModel(this.data);
 
         /* Create the main tunnel of bindings between HTML with JS */
         this.bindModels();
@@ -301,7 +303,7 @@ class Exp {
     /* Initial bindings of methods */
     bindMethods(template = undefined) {
         var self = this;
-        let supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave"];
+        let supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave", "action"];
         let selector = supportedEvents.map(event => {
             return `*[exp-${event}]`;
         });
@@ -309,8 +311,16 @@ class Exp {
         events.forEach(el => {
             supportedEvents.forEach(event => {
                 var method = el.getAttribute('exp-' + event);
-                if (method === null || !(method in self.methods)) return;
                 /* If exp-action is declared then add appropriate EventListener */
+                if (event == 'action') {
+                    el.addEventListener('click', function(e) {
+                        if (this.tracking && this.sdk !== null && this.context !== null) {
+                            this.sdk.track('banner', this.getEventProperties('click'));
+                        }
+                    });
+                }
+
+                if (method === null || !(method in self.methods)) return;
                 el.addEventListener(event, function(e) {
                     self.methods[method].apply(self.model, [e]);
                 });
@@ -321,7 +331,7 @@ class Exp {
     /* Binds DOM object attribute values with model */
     bindAttributes() {
         const self = this;
-        const supportedAttributes = ["src", "href", "alt"];
+        const supportedAttributes = ["src", "href", "alt", "title", "disabled"];
         let selector = supportedAttributes.map(attr => {
             return `*[exp-${attr}]`;
         });
@@ -399,9 +409,19 @@ class Exp {
                 siblingElement: expFor.nextElementSibling
             };
             if (arrayName in this.__storage.loopDefinitions) {
-                this.__storage.loopDefinitions[arrayName].push(expForInstance);
+                const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
+                this.__storage.loopDefinitions[arrayName].push({
+                    template: template,
+                    parentElement: expFor.parentNode,
+                    siblingElement: sibling
+                });
             } else {
-                this.__storage.loopDefinitions[arrayName] = [expForInstance];
+                const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
+                this.__storage.loopDefinitions[arrayName] = [{
+                    template: template,
+                    parentElement: expFor.parentNode,
+                    siblingElement: sibling
+                }];
             };
             /* Remove all children elements */
             expFor.remove();
@@ -418,11 +438,31 @@ class Exp {
         });
     }
 
-    /* Method for updating all exp-binds */
-    updateBindings(key, value) {
-        const bindings = this.select(`*[exp-bind="${key}"]`);
-        bindings.forEach(el => {
+    writeBindValue(value, el) {
+        const parsedAttributes = el.getAttribute('exp-bind').split('|');
+        
+        if (parsedAttributes.length > 1) {
+            let intermediateValue = value;
+
+            for (let i = 1; i < parsedAttributes.length; i++) {
+                const filter = parsedAttributes[i].trim();
+
+                if (filter in this.filters) {
+                    intermediateValue = this.filters[filter].call(this.model, intermediateValue);
+                }
+            }
+
+            el.textContent = intermediateValue;
+        } else {
             el.textContent = value;
+        }
+    }
+
+    /* Method for updating all exp-binds */
+    updateBindings(key, value, el = null) {
+        const bindings = this.select(`*[exp-bind~="${key}"]`);
+        bindings.forEach(el => {
+            this.writeBindValue(value, el);
         });
     }
 
@@ -454,7 +494,7 @@ class Exp {
 
     /* Method for updating attributes */
     updateAttributes(key, value) {
-        const supportedAttributes = ["src", "href", "alt"];
+        const supportedAttributes = ["src", "href", "alt", "title", "disabled"];
         let selector = supportedAttributes.map(attr => {
             return `*[exp-${attr}="${key}"]`;
         });
@@ -508,7 +548,7 @@ class Exp {
             expBinds.forEach(el => {
                 const val = el.getAttribute('exp-bind');
                 if (val.indexOf('.') == -1) {
-                    el.textContent = item;
+                    this.writeBindValue(item, el);
                 } else {
                     const keys = val.split('.');
                     var value = this.findLastField(keys.slice(1), item);

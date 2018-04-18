@@ -71,7 +71,11 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
+<<<<<<< HEAD
 })({6:[function(require,module,exports) {
+=======
+})({4:[function(require,module,exports) {
+>>>>>>> Add first version of documentation and filters
 /** Copyright 2013 mocking@gmail.com * http://github.com/relay-zz/anim
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -108,7 +112,11 @@ var anim = function (_A) {
     //if the 1st param is a number then treat it as a timeout period.
     //If the node reference is null, then we skip it and run the next callback
     //so that we can continue with the animation without throwing an error.
+<<<<<<< HEAD
     if (n > 0 || !n) g = {}, t = 0, cb(q = [[n || 0]]);
+=======
+    if (n > 0 || !n) g = {}, t = 0, cb(q = [].push([n || 0]));
+>>>>>>> Add first version of documentation and filters
 
     //firefox don't allow reading shorthand CSS styles like "margin" so
     //we have to expand them to be "margin-left", "margin-top", etc.
@@ -304,7 +312,11 @@ var anim = function (_A) {
 }();
 
 module.exports = anim;
+<<<<<<< HEAD
 },{}],7:[function(require,module,exports) {
+=======
+},{}],5:[function(require,module,exports) {
+>>>>>>> Add first version of documentation and filters
 /**
  * 
  * @param {string} email 
@@ -316,7 +328,11 @@ function validateEmail(email) {
 }
 
 module.exports = validateEmail;
+<<<<<<< HEAD
 },{}],4:[function(require,module,exports) {
+=======
+},{}],2:[function(require,module,exports) {
+>>>>>>> Add first version of documentation and filters
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -335,6 +351,11 @@ var Exp = function () {
         this.data = settings.data || {};
         /* Controller methods */
         this.methods = settings.methods || {};
+<<<<<<< HEAD
+=======
+        /* Filters */
+        this.filters = settings.filters || {};
+>>>>>>> Add first version of documentation and filters
         /* Initializing model */
         this.model = {};
 
@@ -476,12 +497,21 @@ var Exp = function () {
                 this.loaded();
             }
 
+<<<<<<< HEAD
             /* Initialize model */
             this.initializeModel(this.data);
 
             /* Render Exp banner */
             this.render();
 
+=======
+            /* Render Exp banner */
+            this.render();
+
+            /* Initialize model */
+            this.initializeModel(this.data);
+
+>>>>>>> Add first version of documentation and filters
             /* Create the main tunnel of bindings between HTML with JS */
             this.bindModels();
             this.bindMethods();
@@ -670,7 +700,11 @@ var Exp = function () {
             var template = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
 
             var self = this;
+<<<<<<< HEAD
             var supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave"];
+=======
+            var supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave", "action"];
+>>>>>>> Add first version of documentation and filters
             var selector = supportedEvents.map(function (event) {
                 return "*[exp-" + event + "]";
             });
@@ -678,8 +712,21 @@ var Exp = function () {
             events.forEach(function (el) {
                 supportedEvents.forEach(function (event) {
                     var method = el.getAttribute('exp-' + event);
+<<<<<<< HEAD
                     if (method === null || !(method in self.methods)) return;
                     /* If exp-action is declared then add appropriate EventListener */
+=======
+                    /* If exp-action is declared then add appropriate EventListener */
+                    if (event == 'action') {
+                        el.addEventListener('click', function (e) {
+                            if (this.tracking && this.sdk !== null && this.context !== null) {
+                                this.sdk.track('banner', this.getEventProperties('click'));
+                            }
+                        });
+                    }
+
+                    if (method === null || !(method in self.methods)) return;
+>>>>>>> Add first version of documentation and filters
                     el.addEventListener(event, function (e) {
                         self.methods[method].apply(self.model, [e]);
                     });
@@ -693,7 +740,11 @@ var Exp = function () {
         key: "bindAttributes",
         value: function bindAttributes() {
             var self = this;
+<<<<<<< HEAD
             var supportedAttributes = ["src", "href", "alt"];
+=======
+            var supportedAttributes = ["src", "href", "alt", "title", "disabled"];
+>>>>>>> Add first version of documentation and filters
             var selector = supportedAttributes.map(function (attr) {
                 return "*[exp-" + attr + "]";
             });
@@ -785,6 +836,7 @@ var Exp = function () {
                 /* Delete exp-for attribute */
                 template.removeAttribute("exp-for");
                 /* Copy template into storage, with the root element */
+<<<<<<< HEAD
                 var expForInstance = {
                     template: template,
                     parentElement: expFor.parentNode,
@@ -794,13 +846,33 @@ var Exp = function () {
                     _this6.__storage.loopDefinitions[arrayName].push(expForInstance);
                 } else {
                     _this6.__storage.loopDefinitions[arrayName] = [expForInstance];
+=======
+                if (arrayName in _this6.__storage.loopDefinitions) {
+                    var sibling = expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null ? null : expFor.nextElementSibling;
+                    _this6.__storage.loopDefinitions[arrayName].push({
+                        template: template,
+                        parentElement: expFor.parentNode,
+                        siblingElement: sibling
+                    });
+                } else {
+                    var _sibling = expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null ? null : expFor.nextElementSibling;
+                    _this6.__storage.loopDefinitions[arrayName] = [{
+                        template: template,
+                        parentElement: expFor.parentNode,
+                        siblingElement: _sibling
+                    }];
+>>>>>>> Add first version of documentation and filters
                 };
                 /* Remove all children elements */
                 expFor.remove();
                 /* Check if array exists in model and render multiple templates */
                 if (_this6.model[arrayName]) {
                     _this6.model[arrayName].forEach(function (item) {
+<<<<<<< HEAD
                         _this6.renderNewElement(arrayName, key, item, expForInstance);
+=======
+                        _this6.renderNewElement(arrayName, key, item);
+>>>>>>> Add first version of documentation and filters
                     });
                 } else {
                     _this6.model[arrayName] = [];
@@ -809,15 +881,49 @@ var Exp = function () {
                 _this6.overridePush(_this6.model[arrayName], arrayName, key);
             });
         }
+<<<<<<< HEAD
+=======
+    }, {
+        key: "writeBindValue",
+        value: function writeBindValue(value, el) {
+            var parsedAttributes = el.getAttribute('exp-bind').split('|');
+
+            if (parsedAttributes.length > 1) {
+                var intermediateValue = value;
+
+                for (var i = 1; i < parsedAttributes.length; i++) {
+                    var filter = parsedAttributes[i].trim();
+
+                    if (filter in this.filters) {
+                        intermediateValue = this.filters[filter].call(this.model, intermediateValue);
+                    }
+                }
+
+                el.textContent = intermediateValue;
+            } else {
+                el.textContent = value;
+            }
+        }
+>>>>>>> Add first version of documentation and filters
 
         /* Method for updating all exp-binds */
 
     }, {
         key: "updateBindings",
         value: function updateBindings(key, value) {
+<<<<<<< HEAD
             var bindings = this.select("*[exp-bind=\"" + key + "\"]");
             bindings.forEach(function (el) {
                 el.textContent = value;
+=======
+            var _this7 = this;
+
+            var el = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
+            var bindings = this.select("*[exp-bind~=\"" + key + "\"]");
+            bindings.forEach(function (el) {
+                _this7.writeBindValue(value, el);
+>>>>>>> Add first version of documentation and filters
             });
         }
 
@@ -858,7 +964,11 @@ var Exp = function () {
     }, {
         key: "updateAttributes",
         value: function updateAttributes(key, value) {
+<<<<<<< HEAD
             var supportedAttributes = ["src", "href", "alt"];
+=======
+            var supportedAttributes = ["src", "href", "alt", "title", "disabled"];
+>>>>>>> Add first version of documentation and filters
             var selector = supportedAttributes.map(function (attr) {
                 return "*[exp-" + attr + "=\"" + key + "\"]";
             });
@@ -880,6 +990,7 @@ var Exp = function () {
     }, {
         key: "renderNewElement",
         value: function renderNewElement(arrayName, key, item) {
+<<<<<<< HEAD
             var _this7 = this;
 
             var expFor = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
@@ -891,13 +1002,22 @@ var Exp = function () {
             } else {
                 expFors = this.__storage.loopDefinitions[arrayName];
             }
+=======
+            var _this8 = this;
+
+            var supportedAttributes = ["src", "href", "alt"];
+>>>>>>> Add first version of documentation and filters
             /* Iterate through all exp-for instances linked to targeted array */
             var _iteratorNormalCompletion2 = true;
             var _didIteratorError2 = false;
             var _iteratorError2 = undefined;
 
             try {
+<<<<<<< HEAD
                 for (var _iterator2 = expFors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+=======
+                for (var _iterator2 = this.__storage.loopDefinitions[arrayName][Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+>>>>>>> Add first version of documentation and filters
                     expForInstance = _step2.value;
 
                     /* Clone the template and populate it with element data */
@@ -916,7 +1036,11 @@ var Exp = function () {
                                 el[attr] = item;
                             } else {
                                 var keys = val.split('.');
+<<<<<<< HEAD
                                 var value = _this7.findLastField(keys.slice(1), item);
+=======
+                                var value = _this8.findLastField(keys.slice(1), item);
+>>>>>>> Add first version of documentation and filters
                                 el[attr] = value;
                             };
                         });
@@ -925,10 +1049,17 @@ var Exp = function () {
                     expBinds.forEach(function (el) {
                         var val = el.getAttribute('exp-bind');
                         if (val.indexOf('.') == -1) {
+<<<<<<< HEAD
                             el.textContent = item;
                         } else {
                             var keys = val.split('.');
                             var value = _this7.findLastField(keys.slice(1), item);
+=======
+                            _this8.writeBindValue(item, el);
+                        } else {
+                            var keys = val.split('.');
+                            var value = _this8.findLastField(keys.slice(1), item);
+>>>>>>> Add first version of documentation and filters
                             el.textContent = value;
                         }
                     });
@@ -988,6 +1119,7 @@ var Exp = function () {
     }, {
         key: "generateScopedRule",
         value: function generateScopedRule(rule) {
+<<<<<<< HEAD
             var _this8 = this;
 
             var selectors = rule.selectorText.split(',');
@@ -998,6 +1130,18 @@ var Exp = function () {
                     return selector + "[" + _this8.bannerId + "]";
                 }
                 if (_this8.select(selector.trim()).length > 0) {
+=======
+            var _this9 = this;
+
+            var selectors = rule.selectorText.split(',');
+            var selectorsText = selectors.map(function (selector) {
+                var attr = "exp-" + _this9.getUuid();
+                _this9.addAttributes(selector.trim(), attr);
+                if (selector.includes(".exponea-animate")) {
+                    return selector + "[" + _this9.bannerId + "]";
+                }
+                if (_this9.select(selector.trim()).length > 0) {
+>>>>>>> Add first version of documentation and filters
                     return selector + "[" + attr + "]";
                 }
                 return "" + selector;
@@ -1010,7 +1154,11 @@ var Exp = function () {
     }, {
         key: "addBackdrop",
         value: function addBackdrop() {
+<<<<<<< HEAD
             var _this9 = this;
+=======
+            var _this10 = this;
+>>>>>>> Add first version of documentation and filters
 
             if (this.app == null) return;
             /* Set default backdrop style */
@@ -1058,7 +1206,11 @@ var Exp = function () {
             this.backdrop.addEventListener('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
+<<<<<<< HEAD
                 _this9.removeBanner();
+=======
+                _this10.removeBanner();
+>>>>>>> Add first version of documentation and filters
             });
         }
 
@@ -1096,6 +1248,7 @@ var Exp = function () {
     }, {
         key: "loadRecommendations",
         value: function loadRecommendations() {
+<<<<<<< HEAD
             var _this10 = this;
 
             Object.keys(this.recommendations).forEach(function (rcm) {
@@ -1105,26 +1258,54 @@ var Exp = function () {
                     var options = {
                         recommendationId: _this10.recommendations[rcm].id,
                         size: _this10.recommendations[rcm].total,
+=======
+            var _this11 = this;
+
+            Object.keys(this.recommendations).forEach(function (rcm) {
+                /* Has to already exist due to exp-for initialization */
+                if (_this11.model[rcm]) {
+                    /* Option parameters according to Exponea JS SDK */
+                    var options = {
+                        recommendationId: _this11.recommendations[rcm].id,
+                        size: _this11.recommendations[rcm].total,
+>>>>>>> Add first version of documentation and filters
                         callback: function callback(data) {
                             /* Push to model */
                             if (data && data.length > 0) {
                                 data.forEach(function (item) {
+<<<<<<< HEAD
                                     _this10.model[rcm].push(item);
                                 });
                             }
                             /* Update loading key */
                             if (_this10.recommendations[rcm].loadingKey !== undefined) {
                                 _this10.model[_this10.recommendations[rcm].loadingKey] = true;
+=======
+                                    _this11.model[rcm].push(item);
+                                });
+                            }
+                            /* Update loading key */
+                            if (_this11.recommendations[rcm].loadingKey !== undefined) {
+                                _this11.model[_this11.recommendations[rcm].loadingKey] = true;
+>>>>>>> Add first version of documentation and filters
                             }
                         },
                         fillWithRandom: true
                     };
                     /* Generate recommendation */
+<<<<<<< HEAD
                     if (_this10.sdk && _this10.sdk.getRecommendation) {
                         _this10.sdk.getRecommendation(options);
                     } else {
                         if (_this10.recommendations[rcm].loadingKey !== undefined) {
                             _this10.model[_this10.recommendations[rcm].loadingKey] = true;
+=======
+                    if (_this11.sdk && _this11.sdk.getRecommendation) {
+                        _this11.sdk.getRecommendation(options);
+                    } else {
+                        if (_this11.recommendations[rcm].loadingKey !== undefined) {
+                            _this11.model[_this11.recommendations[rcm].loadingKey] = true;
+>>>>>>> Add first version of documentation and filters
                         }
                     }
                 }
@@ -1228,7 +1409,11 @@ var Exp = function () {
 }();
 
 window.Exp = Exp;
+<<<<<<< HEAD
 },{"./helpers/anim.js":6,"./helpers/validateEmail.js":7}],12:[function(require,module,exports) {
+=======
+},{"./helpers/anim.js":4,"./helpers/validateEmail.js":5}],6:[function(require,module,exports) {
+>>>>>>> Add first version of documentation and filters
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -1250,7 +1435,11 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+<<<<<<< HEAD
   var ws = new WebSocket(protocol + '://' + hostname + ':' + '64144' + '/');
+=======
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '60561' + '/');
+>>>>>>> Add first version of documentation and filters
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -1351,5 +1540,9 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
+<<<<<<< HEAD
 },{}]},{},[12,4])
+=======
+},{}]},{},[6,2])
+>>>>>>> Add first version of documentation and filters
 //# sourceMappingURL=/dist/Exp.map
