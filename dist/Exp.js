@@ -72,6 +72,59 @@ require = (function (modules, cache, entry) {
   // Override the current require with this new one
   return newRequire;
 })({4:[function(require,module,exports) {
+/**
+ * Fetches and inserts a script into the page before the first
+ * pre-existing script element, and optionally calls a callback
+ * on completion.
+ *
+ * [TODO] Make this a module of its own so it can be used elsewhere.
+ * 
+ * @param  {String}   src      source of the script
+ * @param  {Function} callback (optional) onload callback
+ */
+var getScript = function getScript(src, callback) {
+    var el = document.createElement('script');
+
+    el.type = 'text/javascript';
+    el.async = false;
+    el.src = src;
+
+    /**
+     * Ensures callbacks work on older browsers by continuously
+     * checking the readyState of the request. This is defined once
+     * and reused on subsequent calls to getScript.
+     * 
+     * @param  {Element}   el      script element
+     * @param  {Function} callback onload callback
+     */
+    getScript.ieCallback = getScript.ieCallback || function (el, callback) {
+        if (el.readyState === 'loaded' || el.readyState === 'complete') {
+            callback();
+        } else {
+            setTimeout(function () {
+                getScript.ieCallback(el, callback);
+            }, 100);
+        }
+    };
+
+    if (typeof callback === 'function') {
+        if (typeof el.addEventListener !== 'undefined') {
+            el.addEventListener('load', callback, false);
+        } else {
+            el.onreadystatechange = function () {
+                el.onreadystatechange = null;
+                getScript.ieCallback(el, callback);
+            };
+        }
+    }
+
+    // This is defined once and reused on subsequeent calls to getScript
+    getScript.firstScriptEl = getScript.firstScriptEl || document.getElementsByTagName('script')[0];
+    getScript.firstScriptEl.parentNode.insertBefore(el, getScript.firstScriptEl);
+};
+
+module.exports = getScript;
+},{}],5:[function(require,module,exports) {
 /** Copyright 2013 mocking@gmail.com * http://github.com/relay-zz/anim
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -304,7 +357,7 @@ var anim = function (_A) {
 }();
 
 module.exports = anim;
-},{}],5:[function(require,module,exports) {
+},{}],6:[function(require,module,exports) {
 /**
  * 
  * @param {string} email 
@@ -317,6 +370,8 @@ function validateEmail(email) {
 
 module.exports = validateEmail;
 },{}],2:[function(require,module,exports) {
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -324,153 +379,237 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 /* Main class */
 var Exp = function () {
     function Exp(settings) {
+        var _this = this;
+
         _classCallCheck(this, Exp);
 
-        /* Find DOM element which contains Exp code */
-        this.el = settings.el || null;
-        /* Find DOM element to which append HTML code */
-        this.attach = settings.attach || null;
-
-        /* Initializing data model */
-        this.data = settings.data || {};
-        /* Controller methods */
-        this.methods = settings.methods || {};
-        /* Filters */
-        this.filters = settings.filters || {};
         /* Initializing model */
-        this.model = {};
+        this.model = settings.data || {};
 
-        /* Initialization of Exp app */
-        this.app = null;
+        this.RavenInstance = undefined;
+        this.RAVEN_PROJECT = 'https://0a9f9e0203be4cff88075453bfdcce3b@sentry.exponea.com/12';
+        this.RAVEN_CDN = 'https://cdn.ravenjs.com/3.24.2/raven.min.js';
 
-        /* Generate Id for banner */
-        this.bannerId = 'e-' + this.getUuid();
-        /* Dictionaries describing recommendations */
-        this.recommendations = settings.recommendations || {};
-
-        /* Scoping CSS rules locally for banner */
-        this.scoped = settings.scoped || false;
-        /* Function triggered after rendering the banner */
-        this.mounted = settings.mounted || null;
-        /* Backdrop in front of which Exp app will be rendered */
-        this.backdrop = settings.backdrop || null;
-        /* Adding Exponea branding options, by default black */
-        if (settings.branded === undefined || settings.branded === null || settings.branded && settings.branded !== "black" && settings.branded !== "white") {
-            this.branded = "black";
-        } else {
-            this.branded = settings.branded;
-        }
-
-        /* Look for either explicit code or for HTML code in context */
-        this.html = function (_) {
-            if (settings.html !== undefined) return settings.html;
-            if (settings.context !== undefined) {
-                if (settings.context.html !== undefined) return settings.context.html;
-            }
-            return null;
-        }();
-        /* Look for either explicit code or for CSS code in context */
-        this.style = function (_) {
-            if (settings.style !== undefined) return settings.style;
-            if (settings.context !== undefined) {
-                if (settings.context.style !== undefined) return settings.context.style;
-            }
-            return null;
-        }();
-        /* Exponea SDK passed through context attribute when using production banners */
-        this.sdk = function (_) {
-            if (settings.context !== undefined) {
-                if (settings.context.sdk !== undefined) return settings.context.sdk;
-            }
-
-            return null;
-        }();
-        /* Exponea banner context */
-        this.context = function (_) {
-            if (settings.context !== undefined) {
-                if (settings.context.data !== undefined) return settings.context.data;
-            }
-
-            return null;
-        }();
-        /* Check whether banner is in Exponea editor or not */
-        this.inPreview = function (_) {
-            if (settings.context !== undefined) {
-                if (settings.context.inPreview !== undefined) return settings.context.inPreview;
-            }
-
-            return false;
-        }();
-
-        /* Internal storage */
-        this.__storage = {
-            loopDefinitions: {},
-            initializedLoops: {}
-        };
-
-        /* Tracking by default true. Tracks show/close automatically. */
-        if (settings.tracking === undefined) {
-            this.tracking = true;
-        } else {
-            this.tracking = settings.tracking;
-        }
-        /* Setting trigger for banner display */
-        this.trigger = settings.trigger || null;
-
-        /* If trigger exists, inject into DOM based on the type of the trigger */
-        if (this.trigger !== null && !this.inPreview) {
-            if (this.trigger.type == "onready") {
-                /* Renders banner once page elements are loaded */
-                var delay = this.trigger.delay || 0;
-                var self = this;
-                window.addEventListener('load', function () {
-                    setTimeout(function () {
-                        self.inject();
-                    }, delay);
-                });
-                return;
-            } else if (this.trigger.type == "onexit") {
-                /* Renders banner if user wants to leave the page */
-                var _delay = this.trigger.delay || 0;
-                window.__exp_triggered = false;
-                var self = this;
-                document.body.addEventListener("mouseleave", function (e) {
-                    /* Check window was left */
-                    if (e.offsetY - window.scrollY < 0 && !window.__exp_triggered) {
-                        window.__exp_triggered = true;
-                        setTimeout(function () {
-                            self.inject(self);
-                        }, _delay);
-                    }
-                });
-                return;
-            } else if (this.trigger.type = "onaction") {
-                /* Renders banner on specific user action */
-                var self = this;
-                var action = this.trigger.action || "click";
-                var _delay2 = this.trigger.delay || 0;
-                if (this.trigger.element) {
-                    this.trigger.element.addEventListener(action, function () {
-                        setTimeout(function () {
-                            self.inject(self);
-                        }, _delay2);
-                    });
-                }
-                return;
+        this.sentry = function (_) {
+            var defaultSentryConfig = { use: false, noConflict: true };
+            if (settings.sentry === undefined) {
+                return defaultSentryConfig;
             } else {
-                /* If incorrect type of trigger is given do not render at all */
-                throw "Incorrect trigger type " + this.trigger.type;
+                /* check if provided config is valid */
+                var valid = settings.sentry.use !== undefined && settings.sentry.noConflict !== undefined;
+                if (valid) {
+                    return settings.sentry;
+                } else {
+                    return defaultSentryConfig;
+                }
             }
+        }();
+
+        if (this.sentry.use && typeof Raven === "undefined") {
+            var getScript = require('./helpers/getScript.js');
+            getScript(this.RAVEN_CDN, function (_) {
+                _this.configureRaven(_this.sentry.noConflict);
+
+                _this.RavenInstance.context(function () {
+                    this.initialize(settings);
+                }.bind(_this));
+            });
+        } else if (this.sentry.use) {
+            this.configureRaven(this.sentry.noConflict);
+            this.initialize(settings);
+        } else {
+            this.initialize(settings);
         }
+
         /* If no trigger type inject normally */
-        return this.inject();
+        return this.model;
     }
 
-    /* Method for injecting the banner into DOM */
-
-
     _createClass(Exp, [{
-        key: "inject",
+        key: 'initialize',
+        value: function initialize(settings) {
+            var _this2 = this;
+
+            /* Find DOM element which contains Exp code */
+            this.el = settings.el || null;
+            /* Find DOM element to which append HTML code */
+            this.attach = settings.attach || null;
+
+            /* Initializing data model */
+            this.data = settings.data || {};
+            /* Controller methods */
+            this.methods = settings.methods || {};
+            /* Filters */
+            this.filters = settings.filters || {};
+
+            /* Initialization of Exp app */
+            this.app = null;
+
+            /* Generate Id for banner */
+            this.bannerId = 'e-' + this.getUuid();
+            /* Dictionaries describing recommendations */
+            this.recommendations = settings.recommendations || {};
+
+            /* Scoping CSS rules locally for banner */
+            this.scoped = settings.scoped || false;
+            /* Function triggered after rendering the banner */
+            this.mounted = settings.mounted || null;
+            /* Backdrop in front of which Exp app will be rendered */
+            this.backdrop = settings.backdrop || null;
+            /* Adding Exponea branding options, by default black */
+            if (settings.branded === undefined || settings.branded === null || settings.branded && settings.branded !== "black" && settings.branded !== "white") {
+                this.branded = "black";
+            } else {
+                this.branded = settings.branded;
+            }
+
+            /* Look for either explicit code or for HTML code in context */
+            this.html = function (_) {
+                if (settings.html !== undefined) return settings.html;
+                if (settings.context !== undefined) {
+                    if (settings.context.html !== undefined) return settings.context.html;
+                }
+                return null;
+            }();
+            /* Look for either explicit code or for CSS code in context */
+            this.style = function (_) {
+                if (settings.style !== undefined) return settings.style;
+                if (settings.context !== undefined) {
+                    if (settings.context.style !== undefined) return settings.context.style;
+                }
+                return null;
+            }();
+            /* Exponea SDK passed through context attribute when using production banners */
+            this.sdk = function (_) {
+                if (settings.context !== undefined) {
+                    if (settings.context.sdk !== undefined) {
+                        if (settings.context.sdk._) {
+                            _this2.RavenInstance.setTagsContext({ project_token: settings.context.sdk._[0][1][0].token });
+                        }
+                        return settings.context.sdk;
+                    }
+                }
+
+                return null;
+            }();
+            /* Exponea banner context */
+            this.context = function (_) {
+                if (settings.context !== undefined) {
+                    if (settings.context.data !== undefined) {
+                        if (settings.context.data.banner_id && settings.context.data.banner_name) {
+                            _this2.RavenInstance.setTagsContext({ banner_id: settings.context.data.banner_id, banner_name: settings.context.data.banner_name });
+                        }
+                        return settings.context.data;
+                    }
+                }
+
+                return null;
+            }();
+
+            /* Check whether banner is in Exponea editor or not */
+            this.inPreview = function (_) {
+                if (settings.context !== undefined) {
+                    if (settings.context.inPreview !== undefined) return settings.context.inPreview;
+                }
+
+                return false;
+            }();
+
+            /* Internal storage */
+            this.__storage = {
+                loopDefinitions: {},
+                initializedLoops: {}
+            };
+
+            /* Tracking by default true. Tracks show/close automatically. */
+            if (settings.tracking === undefined) {
+                this.tracking = true;
+            } else {
+                this.tracking = settings.tracking;
+            }
+            /* Setting trigger for banner display */
+            this.trigger = settings.trigger || null;
+
+            /* If trigger exists, inject into DOM based on the type of the trigger */
+            if (this.trigger !== null && !this.inPreview) {
+                if (this.trigger.type == "onready") {
+                    /* Renders banner once page elements are loaded */
+                    var delay = this.trigger.delay || 0;
+                    var self = this;
+                    window.addEventListener('load', function () {
+                        setTimeout(function () {
+                            self.inject();
+                        }, delay);
+                    });
+                    return;
+                } else if (this.trigger.type == "onexit") {
+                    /* Renders banner if user wants to leave the page */
+                    var _delay = this.trigger.delay || 0;
+                    window.__exp_triggered = false;
+                    var self = this;
+                    document.body.addEventListener("mouseleave", function (e) {
+                        /* Check window was left */
+                        if (e.offsetY - window.scrollY < 0 && !window.__exp_triggered) {
+                            window.__exp_triggered = true;
+                            setTimeout(function () {
+                                self.inject(self);
+                            }, _delay);
+                        }
+                    });
+                    return;
+                } else if (this.trigger.type = "onaction") {
+                    /* Renders banner on specific user action */
+                    var self = this;
+                    var action = this.trigger.action || "click";
+                    var _delay2 = this.trigger.delay || 0;
+                    if (this.trigger.element) {
+                        var callback = function callback() {
+                            setTimeout(function () {
+                                self.inject(self);
+                            }, _delay2);
+                            self.trigger.element.removeEventListener(action, callback, false);
+                        };
+                        this.trigger.element.addEventListener(action, callback);
+                    }
+                    return;
+                } else {
+                    /* If incorrect type of trigger is given do not render at all */
+                    throw 'Incorrect trigger type ' + this.trigger.type;
+                }
+            }
+
+            return this.inject();
+        }
+    }, {
+        key: 'configureRaven',
+        value: function configureRaven(noConflict) {
+            if (noConflict) {
+                this.RavenInstance = Raven.noConflict();
+                this.RavenInstance.config(this.RAVEN_PROJECT, { tags: { instance: 'exp' } }).install();
+
+                if (this.RavenInstance.isSetup()) {
+                    var exp_cookie = false;
+                    document.cookie.split(/\s*;\s*/).forEach(function (val) {
+                        var _val$split = val.split(/=/),
+                            _val$split2 = _slicedToArray(_val$split, 2),
+                            k = _val$split2[0],
+                            v = _val$split2[1];
+
+                        if (k == '__exponea_etc__') exp_cookie = decodeURIComponent(v);
+                    });
+                    if (exp_cookie) {
+                        this.RavenInstance.setUserContext({ exponea_cookie: exp_cookie });
+                    };
+                }
+            } else {
+                this.RavenInstance = Raven;
+            }
+        }
+
+        /* Method for injecting the banner into DOM */
+
+    }, {
+        key: 'inject',
         value: function inject() {
             /* For control group do not inject and only track show */
             if (false) {
@@ -515,7 +654,7 @@ var Exp = function () {
         /* Initalize model from data */
 
     }, {
-        key: "initializeModel",
+        key: 'initializeModel',
         value: function initializeModel(data) {
             var self = this;
             Object.keys(data).forEach(function (key) {
@@ -577,9 +716,9 @@ var Exp = function () {
         /* Render Exp banner by injecting it into DOM and adding style */
 
     }, {
-        key: "render",
+        key: 'render',
         value: function render() {
-            var _this = this;
+            var _this3 = this;
 
             /* Use el to find element over which to mask Exp */
             if (this.el !== null) {
@@ -609,21 +748,21 @@ var Exp = function () {
                     rules.forEach(function (rule) {
                         /* Check rule is instances of CSSStyleRule */
                         if (rule instanceof CSSStyleRule) {
-                            scopedStyle = scopedStyle + _this.generateScopedRule(rule);
+                            scopedStyle = scopedStyle + _this3.generateScopedRule(rule);
                         }
                         /* Rule is media query */
                         if (rule instanceof CSSMediaRule) {
-                            scopedStyle = scopedStyle + ("@media " + rule.conditionText + " {");
-                            _this.listify(rule.cssRules).forEach(function (rule) {
-                                scopedStyle = scopedStyle + _this.generateScopedRule(rule);
+                            scopedStyle = scopedStyle + ('@media ' + rule.conditionText + ' {');
+                            _this3.listify(rule.cssRules).forEach(function (rule) {
+                                scopedStyle = scopedStyle + _this3.generateScopedRule(rule);
                             });
-                            scopedStyle = scopedStyle + "}";
+                            scopedStyle = scopedStyle + '}';
                         }
                     });
-                    /* Append scoped style */
-                    this.addStyle(scopedStyle);
                     /* Remove original style */
                     style.parentNode.removeChild(style);
+                    /* Append scoped style */
+                    this.addStyle(scopedStyle);
                 } else {
                     /* Append style with global scope */
                     this.addStyle(this.style);
@@ -634,12 +773,12 @@ var Exp = function () {
         /* Initial binding of input models */
 
     }, {
-        key: "bindModels",
+        key: 'bindModels',
         value: function bindModels() {
-            var _this2 = this;
+            var _this4 = this;
 
             var selector = ["email", "number", "search", "tel", "text", "url", "checkbox", "radio"].map(function (input) {
-                return "input[type=\"" + input + "\"][exp-model]";
+                return 'input[type="' + input + '"][exp-model]';
             });
             selector = selector.concat(["textarea[exp-model]", "select[exp-model]"]);
             /* Find all input elements */
@@ -650,15 +789,15 @@ var Exp = function () {
                 /* Handle different input types */
                 if (type === "checkbox") {
                     input.addEventListener("change", function (event) {
-                        _this2.model[model] = event.target.checked;
+                        _this4.model[model] = event.target.checked;
                     });
                 } else if (type === "radio") {
                     input.addEventListener("change", function (event) {
-                        _this2.model[model] = event.target.value;
+                        _this4.model[model] = event.target.value;
                     });
                 } else {
                     input.addEventListener("input", function (event) {
-                        _this2.model[model] = event.target.value;
+                        _this4.model[model] = event.target.value;
                     });
                 }
             });
@@ -667,14 +806,14 @@ var Exp = function () {
         /* Initial bindings of methods */
 
     }, {
-        key: "bindMethods",
+        key: 'bindMethods',
         value: function bindMethods() {
             var template = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
 
             var self = this;
             var supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave", "action"];
             var selector = supportedEvents.map(function (event) {
-                return "*[exp-" + event + "]";
+                return '*[exp-' + event + ']';
             });
             var events = this.select(selector.join(), template);
             events.forEach(function (el) {
@@ -700,12 +839,12 @@ var Exp = function () {
         /* Binds DOM object attribute values with model */
 
     }, {
-        key: "bindAttributes",
+        key: 'bindAttributes',
         value: function bindAttributes() {
             var self = this;
             var supportedAttributes = ["src", "href", "alt", "title", "disabled"];
             var selector = supportedAttributes.map(function (attr) {
-                return "*[exp-" + attr + "]";
+                return '*[exp-' + attr + ']';
             });
             var elements = this.select(selector.join());
             elements.forEach(function (el) {
@@ -721,20 +860,20 @@ var Exp = function () {
         /* Binds the close button with tracking and deleting functionality */
 
     }, {
-        key: "bindClose",
+        key: 'bindClose',
         value: function bindClose() {
-            var _this3 = this;
+            var _this5 = this;
 
-            var selector = "[exp-close]";
+            var selector = '[exp-close]';
             var elements = this.select(selector);
             elements.forEach(function (el) {
                 el.addEventListener('click', function (e) {
                     e.stopPropagation();
                     e.preventDefault();
-                    _this3.removeBanner();
+                    _this5.removeBanner();
                     /* Track 'close' if tracking is set to true */
-                    if (_this3.tracking && _this3.sdk !== null && _this3.context !== null) {
-                        _this3.sdk.track('banner', _this3.getEventProperties('close'));
+                    if (_this5.tracking && _this5.sdk !== null && _this5.context !== null) {
+                        _this5.sdk.track('banner', _this5.getEventProperties('close'));
                     }
                 });
             });
@@ -743,19 +882,19 @@ var Exp = function () {
         /* Bind exp-ifs */
 
     }, {
-        key: "bindIfs",
+        key: 'bindIfs',
         value: function bindIfs() {
-            var _this4 = this;
+            var _this6 = this;
 
-            var expIfs = this.select("[exp-if]");
+            var expIfs = this.select('[exp-if]');
             expIfs.forEach(function (el) {
                 /* BUG: does not check the original display value, assumes block */
                 var attr = el.getAttribute("exp-if");
-                if (_this4.model[attr] !== null && _this4.model[attr] !== undefined) {
-                    el.style.display = _this4.model[attr] ? "block" : "none";
+                if (_this6.model[attr] !== null && _this6.model[attr] !== undefined) {
+                    el.style.display = _this6.model[attr] ? "block" : "none";
                 } else {
-                    throw "exp-if attribute " + attr + " is not defined in model.";
-                    _this4.model[attr] = null;
+                    throw 'exp-if attribute ' + attr + ' is not defined in model.';
+                    _this6.model[attr] = null;
                 }
             });
         }
@@ -763,16 +902,16 @@ var Exp = function () {
         /* Creates access to elements from model scope */
 
     }, {
-        key: "bindRefs",
+        key: 'bindRefs',
         value: function bindRefs() {
-            var _this5 = this;
+            var _this7 = this;
 
-            var selecor = "[exp-ref]";
+            var selecor = '[exp-ref]';
             var elements = this.select(selecor);
             elements.forEach(function (el) {
                 var val = el.getAttribute('exp-ref');
                 if (val && val !== '') {
-                    _this5.model.$refs[val] = el;
+                    _this7.model.$refs[val] = el;
                 }
             });
         }
@@ -780,31 +919,31 @@ var Exp = function () {
         /* Instantiates and binds exp-for with model */
 
     }, {
-        key: "bindFors",
+        key: 'bindFors',
         value: function bindFors() {
-            var _this6 = this;
+            var _this8 = this;
 
-            var expFors = this.select("[exp-for], [exp-rcm]");
+            var expFors = this.select('[exp-for], [exp-rcm]');
             expFors.forEach(function (expFor) {
                 /* Tokenize and parse attribute */
                 var attr = expFor.hasAttribute('exp-for') ? 'exp-for' : 'exp-rcm';
                 var key = expFor.getAttribute(attr).split(' ')[0];
                 var arrayName = expFor.getAttribute(attr).split(' ')[2];
-                var hash = 'e-' + _this6.getUuid();
+                var hash = 'e-' + _this8.getUuid();
                 var template = expFor.cloneNode(true);
                 /* Delete exp-for attribute */
                 template.removeAttribute("exp-for");
                 /* Copy template into storage, with the root element */
-                if (arrayName in _this6.__storage.loopDefinitions) {
+                if (arrayName in _this8.__storage.loopDefinitions) {
                     var sibling = expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null ? null : expFor.nextElementSibling;
-                    _this6.__storage.loopDefinitions[arrayName].push({
+                    _this8.__storage.loopDefinitions[arrayName].push({
                         template: template,
                         parentElement: expFor.parentNode,
                         siblingElement: sibling
                     });
                 } else {
                     var _sibling = expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null ? null : expFor.nextElementSibling;
-                    _this6.__storage.loopDefinitions[arrayName] = [{
+                    _this8.__storage.loopDefinitions[arrayName] = [{
                         template: template,
                         parentElement: expFor.parentNode,
                         siblingElement: _sibling
@@ -813,19 +952,19 @@ var Exp = function () {
                 /* Remove all children elements */
                 expFor.remove();
                 /* Check if array exists in model and render multiple templates */
-                if (_this6.model[arrayName]) {
-                    _this6.model[arrayName].forEach(function (item) {
-                        _this6.renderNewElement(arrayName, key, item);
+                if (_this8.model[arrayName]) {
+                    _this8.model[arrayName].forEach(function (item) {
+                        _this8.renderNewElement(arrayName, key, item);
                     });
                 } else {
-                    _this6.model[arrayName] = [];
+                    _this8.model[arrayName] = [];
                 }
                 /* Override the push method of array in the model for reactivity */
-                _this6.overridePush(_this6.model[arrayName], arrayName, key);
+                _this8.overridePush(_this8.model[arrayName], arrayName, key);
             });
         }
     }, {
-        key: "writeBindValue",
+        key: 'writeBindValue',
         value: function writeBindValue(value, el) {
             var parsedAttributes = el.getAttribute('exp-bind').split('|');
 
@@ -849,24 +988,24 @@ var Exp = function () {
         /* Method for updating all exp-binds */
 
     }, {
-        key: "updateBindings",
+        key: 'updateBindings',
         value: function updateBindings(key, value) {
-            var _this7 = this;
+            var _this9 = this;
 
             var el = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
-            var bindings = this.select("*[exp-bind~=\"" + key + "\"]");
+            var bindings = this.select('*[exp-bind~="' + key + '"]');
             bindings.forEach(function (el) {
-                _this7.writeBindValue(value, el);
+                _this9.writeBindValue(value, el);
             });
         }
 
         /* Method for updating input exp-models */
 
     }, {
-        key: "updateModels",
+        key: 'updateModels',
         value: function updateModels(key, value) {
-            var modelBindings = this.select("*[exp-model=\"" + key + "\"]");
+            var modelBindings = this.select('*[exp-model="' + key + '"]');
             modelBindings.forEach(function (input) {
                 var model = input.getAttribute("exp-model");
                 var type = input.getAttribute("type");
@@ -884,9 +1023,9 @@ var Exp = function () {
         /* Method for updating exp-ifs */
 
     }, {
-        key: "updateIfs",
+        key: 'updateIfs',
         value: function updateIfs(key, value) {
-            var expIfs = this.select("*[exp-if=\"" + key + "\"]");
+            var expIfs = this.select('*[exp-if="' + key + '"]');
             expIfs.forEach(function (el) {
                 /* BUG: does not check the original display value, assumes block */
                 el.style.display = value ? "block" : "none";
@@ -896,11 +1035,11 @@ var Exp = function () {
         /* Method for updating attributes */
 
     }, {
-        key: "updateAttributes",
+        key: 'updateAttributes',
         value: function updateAttributes(key, value) {
             var supportedAttributes = ["src", "href", "alt", "title", "disabled"];
             var selector = supportedAttributes.map(function (attr) {
-                return "*[exp-" + attr + "=\"" + key + "\"]";
+                return '*[exp-' + attr + '="' + key + '"]';
             });
             var that = this;
             var elements = this.select(selector.join());
@@ -918,9 +1057,9 @@ var Exp = function () {
         /* Renders a new element of an array */
 
     }, {
-        key: "renderNewElement",
+        key: 'renderNewElement',
         value: function renderNewElement(arrayName, key, item) {
-            var _this8 = this;
+            var _this10 = this;
 
             var supportedAttributes = ["src", "href", "alt"];
             /* Iterate through all exp-for instances linked to targeted array */
@@ -935,10 +1074,10 @@ var Exp = function () {
                     /* Clone the template and populate it with element data */
                     var template = expForInstance.template.cloneNode(true);
                     var attrSelector = supportedAttributes.map(function (attr) {
-                        return "*[exp-" + attr + "]";
+                        return '*[exp-' + attr + ']';
                     });
                     var expAttrs = this.select(attrSelector.join(), template);
-                    var expBinds = this.select("[exp-bind]", template);
+                    var expBinds = this.select('[exp-bind]', template);
                     /* Override attributes of the node */
                     expAttrs.forEach(function (el) {
                         supportedAttributes.forEach(function (attr) {
@@ -948,7 +1087,7 @@ var Exp = function () {
                                 el[attr] = item;
                             } else {
                                 var keys = val.split('.');
-                                var value = _this8.findLastField(keys.slice(1), item);
+                                var value = _this10.findLastField(keys.slice(1), item);
                                 el[attr] = value;
                             };
                         });
@@ -957,10 +1096,10 @@ var Exp = function () {
                     expBinds.forEach(function (el) {
                         var val = el.getAttribute('exp-bind');
                         if (val.indexOf('.') == -1) {
-                            _this8.writeBindValue(item, el);
+                            _this10.writeBindValue(item, el);
                         } else {
                             var keys = val.split('.');
-                            var value = _this8.findLastField(keys.slice(1), item);
+                            var value = _this10.findLastField(keys.slice(1), item);
                             el.textContent = value;
                         }
                     });
@@ -986,7 +1125,7 @@ var Exp = function () {
         /* Override the push function with reactivity functionality */
 
     }, {
-        key: "overridePush",
+        key: 'overridePush',
         value: function overridePush(array, arrayName, key) {
             var self = this;
             array.push = function (_) {
@@ -1002,7 +1141,7 @@ var Exp = function () {
         /* Method for inserting stylesheet */
 
     }, {
-        key: "addStyle",
+        key: 'addStyle',
         value: function addStyle(css) {
             var disabled = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
@@ -1018,31 +1157,31 @@ var Exp = function () {
         /* Method for adding unique ID to CSS selectors */
 
     }, {
-        key: "generateScopedRule",
+        key: 'generateScopedRule',
         value: function generateScopedRule(rule) {
-            var _this9 = this;
+            var _this11 = this;
 
             var selectors = rule.selectorText.split(',');
             var selectorsText = selectors.map(function (selector) {
-                var attr = "exp-" + _this9.getUuid();
-                _this9.addAttributes(selector.trim(), attr);
+                var attr = 'exp-' + _this11.getUuid();
+                _this11.addAttributes(selector.trim(), attr);
                 if (selector.includes(".exponea-animate")) {
-                    return selector + "[" + _this9.bannerId + "]";
+                    return selector + '[' + _this11.bannerId + ']';
                 }
-                if (_this9.select(selector.trim()).length > 0) {
-                    return selector + "[" + attr + "]";
+                if (_this11.select(selector.trim()).length > 0) {
+                    return selector + '[' + attr + ']';
                 }
-                return "" + selector;
+                return '' + selector;
             });
-            return selectorsText.join() + " { " + rule.style.cssText + " }";
+            return selectorsText.join() + ' { ' + rule.style.cssText + ' }';
         }
 
         /* Handle backdrop option */
 
     }, {
-        key: "addBackdrop",
+        key: 'addBackdrop',
         value: function addBackdrop() {
-            var _this10 = this;
+            var _this12 = this;
 
             if (this.app == null) return;
             /* Set default backdrop style */
@@ -1090,27 +1229,28 @@ var Exp = function () {
             this.backdrop.addEventListener('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
-                _this10.removeBanner();
+                _this12.removeBanner();
             });
         }
 
         /* Adds Powered by Exponea branding */
 
     }, {
-        key: "addBranding",
+        key: 'addBranding',
         value: function addBranding() {
             if (this.app === null) return;
             var branding = document.createElement('object');
             var uuid = this.getUuid();
+            branding.setAttribute('e' + uuid, '');
+            this.addStyle('[e' + uuid + ']{font-size:11px;position:absolute;opacity:.6;right:5px;bottom:5px;padding-top:0;text-decoration:none;display:block}[e' + uuid + ']:hover{opacity:.9}[e' + uuid + '] a{color: ' + this.branded + '}');
+            branding.innerHTML = '<a href="https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral" target="_blank">Powered by Exponea</a>';
             this.app.appendChild(branding);
-            branding.innerHTML = '<a href="https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral" e' + uuid + ' target="_blank">Powered by Exponea</a>';
-            this.addStyle('[e' + uuid + ']{font-size:11px;position:absolute;color:' + this.branded + ';opacity:.6;right:5px;bottom:5px;padding-top:0;text-decoration:none}[e' + uuid + ']:hover{opacity:.9}');
         }
 
         /* Adds exponea-animate class which is responsible for smooth transitions */
 
     }, {
-        key: "addAnimationClass",
+        key: 'addAnimationClass',
         value: function addAnimationClass() {
             var className = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "exponea-animate";
 
@@ -1126,37 +1266,37 @@ var Exp = function () {
         /* Loads Exponea recommendation and inserts into model */
 
     }, {
-        key: "loadRecommendations",
+        key: 'loadRecommendations',
         value: function loadRecommendations() {
-            var _this11 = this;
+            var _this13 = this;
 
             Object.keys(this.recommendations).forEach(function (rcm) {
                 /* Has to already exist due to exp-for initialization */
-                if (_this11.model[rcm]) {
+                if (_this13.model[rcm]) {
                     /* Option parameters according to Exponea JS SDK */
                     var options = {
-                        recommendationId: _this11.recommendations[rcm].id,
-                        size: _this11.recommendations[rcm].total,
+                        recommendationId: _this13.recommendations[rcm].id,
+                        size: _this13.recommendations[rcm].total,
                         callback: function callback(data) {
                             /* Push to model */
                             if (data && data.length > 0) {
                                 data.forEach(function (item) {
-                                    _this11.model[rcm].push(item);
+                                    _this13.model[rcm].push(item);
                                 });
                             }
                             /* Update loading key */
-                            if (_this11.recommendations[rcm].loadingKey !== undefined) {
-                                _this11.model[_this11.recommendations[rcm].loadingKey] = true;
+                            if (_this13.recommendations[rcm].loadingKey !== undefined) {
+                                _this13.model[_this13.recommendations[rcm].loadingKey] = true;
                             }
                         },
                         fillWithRandom: true
                     };
                     /* Generate recommendation */
-                    if (_this11.sdk && _this11.sdk.getRecommendation) {
-                        _this11.sdk.getRecommendation(options);
+                    if (_this13.sdk && _this13.sdk.getRecommendation) {
+                        _this13.sdk.getRecommendation(options);
                     } else {
-                        if (_this11.recommendations[rcm].loadingKey !== undefined) {
-                            _this11.model[_this11.recommendations[rcm].loadingKey] = true;
+                        if (_this13.recommendations[rcm].loadingKey !== undefined) {
+                            _this13.model[_this13.recommendations[rcm].loadingKey] = true;
                         }
                     }
                 }
@@ -1166,7 +1306,7 @@ var Exp = function () {
         /* Remove banner */
 
     }, {
-        key: "removeBanner",
+        key: 'removeBanner',
         value: function removeBanner() {
             if (this.app === null) return;
             this.app.parentNode.removeChild(this.app);
@@ -1180,14 +1320,14 @@ var Exp = function () {
         /* Return Array from DOM elements collection list */
 
     }, {
-        key: "listify",
+        key: 'listify',
         value: function listify(list) {
             return Array.prototype.slice.call(list);
         }
         /* Return array from querySelector */
 
     }, {
-        key: "select",
+        key: 'select',
         value: function select(selector) {
             var scope = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.app;
 
@@ -1201,7 +1341,7 @@ var Exp = function () {
         /* Helper method for adding attribute, used by CSS scoping */
 
     }, {
-        key: "addAttributes",
+        key: 'addAttributes',
         value: function addAttributes(selector, attr) {
             var val = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "";
 
@@ -1212,7 +1352,7 @@ var Exp = function () {
         /* Helper method for generating unique IDs, used by CSS scoping */
 
     }, {
-        key: "getUuid",
+        key: 'getUuid',
         value: function getUuid() {
             var firstPart = Math.random() * 46656 | 0;
             var secondPart = Math.random() * 46656 | 0;
@@ -1223,7 +1363,7 @@ var Exp = function () {
         /* Add inline style to element */
 
     }, {
-        key: "setStyleFromObject",
+        key: 'setStyleFromObject',
         value: function setStyleFromObject(object, el) {
             for (var property in object) {
                 el.style[property] = object[property];
@@ -1232,7 +1372,7 @@ var Exp = function () {
         /* Helper method for creating event attributes for tracking */
 
     }, {
-        key: "getEventProperties",
+        key: 'getEventProperties',
         value: function getEventProperties(action, interactive) {
             if (this.context === null) return;
             return {
@@ -1250,7 +1390,7 @@ var Exp = function () {
         /* Helper method for finding nested fields in nested dictionaries */
 
     }, {
-        key: "findLastField",
+        key: 'findLastField',
         value: function findLastField(items, dict) {
             if (items.length == 1) return dict[items[0]];else return rec(items.slice(1), dict[items[0]]);
         }
@@ -1260,7 +1400,7 @@ var Exp = function () {
 }();
 
 window.Exp = Exp;
-},{"./helpers/anim.js":4,"./helpers/validateEmail.js":5}],6:[function(require,module,exports) {
+},{"./helpers/getScript.js":4,"./helpers/anim.js":5,"./helpers/validateEmail.js":6}],20:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -1282,7 +1422,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '60561' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '64802' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -1383,5 +1523,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[6,2])
+},{}]},{},[20,2])
 //# sourceMappingURL=/dist/Exp.map
