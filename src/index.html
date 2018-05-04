@@ -8,7 +8,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
   <style>
-    body { font-family: 'Source Sans Pro', sans-serif; line-height: 1.6; color: #34495e; margin: 0; padding: 0; }
+    body { position: relative; font-family: 'Source Sans Pro', sans-serif; line-height: 1.6; color: #34495e; margin: 0; padding: 0; }
     code { padding: 5px; background: #f8f8f8; color: #e96900 }
     a { text-decoration: none; color: #2196F3; }
     a:hover { text-decoration: underline; }
@@ -366,7 +366,7 @@ banner.$validateEmail(banner.email) // => true</code></pre>
   },
   branded: false
 })</code></pre>
-    <p>Below is an example of out <code>uppercase</code> filter being used:</p>
+    <p>Below is an example of our <code>uppercase</code> filter being used:</p>
     <div class="output">
       <div id="uppercase">
         <input type="text" exp-model="message">
@@ -495,8 +495,308 @@ banner.$validateEmail(banner.email) // => true</code></pre>
     <p>2. <code>exp-close</code> directive tracks <code>action: close</code> event and removes the banner.</p>
     <pre><code>&lt;span exp-close&gt;X&lt;/span&gt;</code></pre>
     <h2 id="sentry-integration">Sentry Integration</h2>
-    <h2 id="gdpr-compliance">GDPR Compliance</h2>
+    <p>Exp is fully integrated with <a href="https://sentry.io/" target="_blank">Sentry.io</a>. Sentry is an open-source error tracking tool that helps developers monitor and fix crashes in real-time. </p>
+    <p>By default Sentry is turned off. Sentry can be enabled on Exp instance:</p>
+    <pre><code>var banner = new Exp({
+  context: this,
+  sentry: {
+    use: true, // default false
+    noConflict: true // default true
+  }
+})</code></pre>
+    <p>By default Exp will make embed Raven JavaScript SDK from Sentry CDN. It will run Raven in <code>noConflict</code> mode which will create new instance of Raven object per each web-layer. <code>noConflict</code> mode can be set to false to use clients Raven integration. One downside of disabling noConflict mode is that we will lose the ability to correctly identify which web-layers are causing errors. It is recommended to always use <code>noConflict: true</code>.</p>
+    <p>If possible Exp will try to tag errors with web-layer ID, web-layer name and project-token.</p>
+    <h2 id="gdpr-compliance">GDPR Compliance (default banner templates)</h2>
+    <p>By default all of the new banner templates using Exp are GDPR compliant. Beware that using Exp for web-layer doesn't imply GDPR compliance. All the banner templates collecting customer data track <code>consent</code> event.</p>
+    <p>Example implementation:</p>
+    <pre><code>this.sdk.track('consent', {
+  action: 'accept',
+  category: '[[ consentCategory ]]',
+  valid_until: 'unlimited'
+});</code></pre>
+    <p>If you wish to develop custom web-layer and you need to track <code>consent</code> events please consult technical consultants.</p>
     <h2 id="common-use-cases">Common Use-cases</h2>
+    <p>In this section we will show you example code on how to implement basic web-layers such as newsletter collection, countdown offer or on-exit full screen web-layer.</p>
+    <h3 id="newsletter-collection">Newsletter Collection</h3>
+    HTML:
+<pre><code>&lt;div class=&quot;exponea-banner&quot;&gt;
+  &lt;span class=&quot;close&quot; exp-close&gt;X&lt;/span&gt;
+  &lt;h2&gt;Subscribe!&lt;/h2&gt;
+  &lt;input type=&quot;text&quot; placeholder=&quot;@&quot; exp-model=&quot;email&quot;/&gt;
+  &lt;button exp-click=&quot;submit&quot;&gt;Subscribe&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+    CSS:
+<pre><code>.exponea-banner {
+  position: fixed;
+  width: 350px;
+  padding: 15px 15px 25px;
+  bottom: 20px;
+  right: 20px;
+  background: #ffd500;
+}
+.close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+h2 {
+  margin: 0 0 10px;
+}
+input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border: 0;
+}
+button {
+  width: 100%;
+  padding: 10px 15px;
+  border: 0;
+  background: #1c1733;
+  color: #ffffff;
+}</code></pre>
+    JavaScript:
+<pre><code>var banner = new Exp({
+  context: this,
+  data: {
+    email: ''
+  },
+  methods: {
+    submit: function() {
+      if (this.$validateEmail(this.email)) {
+        this.sdk.update({ email: this.email });
+        this.removeBanner();
+      } else {
+        alert('Invalid email!')
+      }
+    }
+  },
+  scoped: true
+})</code></pre>
+    <button id="trigger-newsletter">Show banner</button>
+    <p>Let's go over the HTML and JavaScript part and understand what exactly is happening.</p>
+    <p>First notice the <code>exp-close</code> directive. It is responsible for adding a close functionality to the span element. By default anything that has <code>exp-close</code> directive will track banner close event.</p>
+    <p>Now look at the input. It has <code>exp-model="email"</code> directive. What it does is that it makes the <code>email</code> variable in our data model reactive, so any time we change the text in the input the variable changes aswell.</p>
+    <p>Last important thing in HTML is the <code>exp-click="submit"</code> directive on the button element. This will invoke the <code>submit</code> method defined on our Exp instance.</p>
+    <p>JavaScript is even more simpler. The <code>submit</code> method performs basic validation with built in method <code>$validateEmail()</code> (all built in methods start with the dollar sign besides <code>removeBanner()</code>). Value of the input is accessed by <code>this.email</code>.</p>
+    <p><code>scoped: true</code> just makes sure that the CSS is applied only to the banner and nothing else on the site. Feel free to inspect the banner and see how it works :)</p>
+<script>
+var banner7 = new Exp({
+  data: {
+    email: ''
+  },
+  methods: {
+    submit: function() {
+      if (this.$validateEmail(this.email)) {
+        this.removeBanner();
+      } else {
+        alert('Invalid email!')
+      }
+    }
+  },
+  trigger: {
+    type: 'onaction',
+    action: 'click',
+    element: document.getElementById('trigger-newsletter')
+  },
+  html: `
+  <div class="exponea-banner">
+    <span class="close" exp-close>X</span>
+    <h2>Subscribe!</h2>
+    <input type="text" placeholder="@" exp-model="email"/>
+    <button exp-click="submit">Subscribe</button>
+  </div>`,
+  style: `
+  .exponea-banner {
+    position: fixed;
+    width: 350px;
+    padding: 15px 15px 25px;
+    bottom: 20px;
+    right: 20px;
+    background: #ffd500;
+  }
+  .close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+  }
+  h2 {
+    margin: 0 0 10px;
+  }
+  input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border: 0;
+  }
+  button {
+    width: 100%;
+    padding: 10px 15px;
+    border: 0;
+    background: #1c1733;
+    color: #ffffff;
+  }
+  `,
+  scoped: true
+})
+</script>
+    <h3 id="countdown-offer">Countdown Offer</h3>
+    HTML:
+    <pre><code>&lt;div class=&quot;exponea-banner&quot;&gt;
+  &lt;span class=&quot;close&quot; exp-close&gt;X&lt;/span&gt;
+  &lt;h2&gt;Limited time offer!&lt;/h2&gt;
+  &lt;span exp-bind=&quot;days&quot;&gt;&lt;/span&gt;days 
+  &lt;span exp-bind=&quot;hours&quot;&gt;&lt;/span&gt;hours 
+  &lt;span exp-bind=&quot;minutes&quot;&gt;&lt;/span&gt;minutes 
+  &lt;span exp-bind=&quot;seconds&quot;&gt;&lt;/span&gt;seconds left
+&lt;/div&gt;</code></pre>
+    CSS:
+    <pre><code>.exponea-banner {
+  position: fixed;
+  width: 350px;
+  padding: 15px 15px 25px;
+  top: 20px;
+  left: 20px;
+  background: #ffd500;
+}
+.close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+h2 {
+  margin: 0 0 10px;
+}
+span {
+  font-weight: bold;
+}</code></pre>
+    JavaScript:
+    <pre><code>var banner = new Exp({
+  data: {
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    end_time: new Date((new Date()).getTime() + (1000*60*2)),
+    show: true,
+    timer: null
+  },
+  methods: {
+    updateTime: function() {
+      var current_time = new Date();
+      var distance = this.end_time.getTime() - current_time.getTime();
+
+      if (distance < 0) {
+        this.removeBanner();
+        clearInterval(this.timer)
+        return;
+      }
+
+      var _second = 1000;
+      var _minute = _second * 60;
+      var _hour = _minute * 60;
+      var _day = _hour * 24;
+
+      this.days = Math.floor(distance / _day);
+      this.hours = Math.floor((distance % _day) / _hour);
+      this.minutes = Math.floor((distance % _hour) / _minute);
+      this.seconds = Math.floor((distance % _minute) / _second);
+    }
+  },
+  mounted: function() {
+    this.updateTime();
+    this.timer = setInterval(this.updateTime.bind(this), 1000)
+  }
+})</code></pre>
+<button id="trigger-countdown">Show banner</button>
+    <script>
+    var banner8 = new Exp({
+      trigger: {
+        type: 'onaction',
+        action: 'click',
+        element: document.getElementById('trigger-countdown')
+      },
+      data: {
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        end_time: new Date((new Date()).getTime() + (1000*60*20)),
+        show: true,
+        timer: null
+      },
+      methods: {
+        updateTime: function() {
+          
+          var current_time = new Date();
+          var distance = this.end_time.getTime() - current_time.getTime();
+
+          if (distance < 0) {
+            this.removeBanner();
+            clearInterval(this.timer)
+            return;
+          }
+
+          var _second = 1000;
+          var _minute = _second * 60;
+          var _hour = _minute * 60;
+          var _day = _hour * 24;
+
+          this.days = Math.floor(distance / _day);
+          this.hours = Math.floor((distance % _day) / _hour);
+          this.minutes = Math.floor((distance % _hour) / _minute);
+          this.seconds = Math.floor((distance % _minute) / _second);
+        }
+      },
+      mounted: function() {
+        this.updateTime();
+        this.timer = setInterval(this.updateTime.bind(this), 1000)
+      },
+      html: `
+      <div class="exponea-banner">
+        <span class="close" exp-close>X</span>
+        <h2>Limited time offer!</h2>
+        <span exp-bind="days"></span>days 
+        <span exp-bind="hours"></span>hours 
+        <span exp-bind="minutes"></span>minutes 
+        <span exp-bind="seconds"></span>seconds left
+      </div>`,
+      style: `
+      .exponea-banner {
+        position: fixed;
+        width: 350px;
+        padding: 15px 15px 25px;
+        top: 20px;
+        left: 20px;
+        background: #ffd500;
+      }
+      .close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+      }
+      h2 {
+        margin: 0 0 10px;
+      }
+      span {
+        font-weight: bold;
+      }
+      `,
+      scoped: true
+    })
+    </script>
+    <p>HTML is rather simple here. Basic use of <code>exp-bind</code> directives to display days, hours, minutes and seconds left.</p>
+    <p>JavaScript: Basic logic goes like this: create an interval that will update the days, hours, minutes and seconds left each second. We did this by calling <code>setInterval(this.updateTime.bind(this), 1000)</code> in the <code>mounted</code> lifecycle hook.</p>
+    <p>Note that it is important to use <code>.bind(this)</code> to keep the context of the method same.</p>
+    <h3 id="on-exit-full-screen">On-exit Fullscreen</h3>
+    HTML:
+    <pre><code></code></pre>
+    CSS:
+    <pre><code></code></pre>
+    JavaScript:
+    <pre><code></code></pre>
     <h2 id="api-reference">API Reference</h2>
     <div style="font-size: 14px;">Exp frameworks API is inspired by the amazing <a href="https://vuejs.org/" target="_blank">Vue.js</a> framework. Big parts of this documentation is taken from Vue.js <a href="https://vuejs.org/v2/guide/" target="_blank">guide</a>. All credits goes to its respective owners.</div>
   </div>
