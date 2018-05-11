@@ -347,9 +347,7 @@ banner.a // => 3</code></pre>
 banner.$validateEmail(banner.email) // => true</code></pre>
     <p>In the future, you can consult the <a href="#">API reference</a> for a full list of instance properties and methods.</p>
     <h3 id="instance-lifecycle-hooks">Instance Lifecycle Hooks</h3>
-    <p>TODO add more lifecycle hooks</p>
-    <h2 id="computed-properties">Computed Properties</h2>
-    <p>TODO</p>
+    <p>This section is work in progress.</p>
     <h2 id="filters">Filters</h2>
     <p>Exp allows you to define filters that can be used to apply common text formatting. Filters are usable only with <code>exp-bind</code> directive. Filters should be appended to the end of the expression denoted by the "pipe" symbol:</p>
     <pre><code>&lt;p exp-bind=&quot;message | uppercase&quot;&gt;&lt;/p&gt;</code></pre>
@@ -790,13 +788,6 @@ span {
     <p>HTML is rather simple here. Basic use of <code>exp-bind</code> directives to display days, hours, minutes and seconds left.</p>
     <p>JavaScript: Basic logic goes like this: create an interval that will update the days, hours, minutes and seconds left each second. We did this by calling <code>setInterval(this.updateTime.bind(this), 1000)</code> in the <code>mounted</code> lifecycle hook.</p>
     <p>Note that it is important to use <code>.bind(this)</code> to keep the context of the method same.</p>
-    <h3 id="on-exit-full-screen">On-exit Fullscreen</h3>
-    HTML:
-    <pre><code></code></pre>
-    CSS:
-    <pre><code></code></pre>
-    JavaScript:
-    <pre><code></code></pre>
     <h2 id="api-reference">API Reference</h2>
     <div style="font-size: 14px;">Exp frameworks API is inspired by the amazing <a href="https://vuejs.org/" target="_blank">Vue.js</a> framework. Big parts of this documentation is taken from Vue.js <a href="https://vuejs.org/v2/guide/" target="_blank">guide</a>. All credits goes to its respective owners.</div>
   </div>
