@@ -5,41 +5,57 @@ class Exp {
         this.model = settings.data || {};
 
         this.RavenInstance = undefined;
-        this.RAVEN_PROJECT = 'https://0a9f9e0203be4cff88075453bfdcce3b@sentry.exponea.com/12';
+        this.RAVEN_PROJECT = '';
         this.RAVEN_CDN = 'https://cdn.ravenjs.com/3.24.2/raven.min.js';
         
+        /* Prepare sentry config */
         this.sentry = (_ => {
-            const defaultSentryConfig = { use: false, noConflict: true };
+            /* Default config */
+            let config = {
+                use: false,
+                noConflict: true,
+                project: 'https://0a9f9e0203be4cff88075453bfdcce3b@sentry.exponea.com/12',
+                options: {}
+            };
             if (settings.sentry === undefined) {
-                return defaultSentryConfig;
-            } else {
-                /* check if provided config is valid */
-                const valid = (settings.sentry.use !== undefined && settings.sentry.noConflict !== undefined);
-                if (valid) {
-                    return settings.sentry;
-                } else {
-                    return defaultSentryConfig;
-                }
+                return config;
             }
+
+            /* Change default config values */
+            if (settings.sentry.use !== undefined) config.use = settings.sentry.use;
+            if (settings.sentry.noConflict !== undefined) config.noConflict = settings.sentry.noConflict;
+            if (settings.sentry.project !== undefined) config.project = settings.sentry.project;
+            if (settings.sentry.options !== undefined) config.options = settings.sentry.options;
+
+            return config;
         })();
         
-        if (this.sentry.use && typeof(Raven) === "undefined") {
+        /* Add sentry script if necessary */
+        if (this.sentry.use && typeof(Raven) === "undefined") { // Sentry SDK not present
+            /* jQuery getScript polyfill */
             const getScript = require('./helpers/getScript.js');
             getScript(this.RAVEN_CDN, _ => {
+                /* Configure sentry */
                 this.configureRaven(this.sentry.noConflict);
 
+                /* Initialize banner in sentry context */
                 this.RavenInstance.context(function() {
                     this.initialize(settings);
                 }.bind(this))
             })
-        } else if (this.sentry.use) {
+        } else if (this.sentry.use) { // Sentry SDK already present
+            /* Configure sentry */
             this.configureRaven(this.sentry.noConflict);
-            this.initialize(settings)
+
+            /* Initialize banner in sentry context */
+            this.RavenInstance.context(function() {
+                this.initialize(settings);
+            }.bind(this))
         } else {
+            /* initialize banner without sentry */
             this.initialize(settings)
         }
         
-        /* If no trigger type inject normally */
         return this.model;
     }
 
@@ -97,6 +113,7 @@ class Exp {
         this.sdk = (_ => {
             if (settings.context !== undefined) {
                 if (settings.context.sdk !== undefined) {
+                    /* Try to add project token to sentry context */
                     if (settings.context.sdk._) {
                         this.RavenInstance.setTagsContext({ project_token: settings.context.sdk._[0][1][0].token });
                     }
@@ -110,6 +127,7 @@ class Exp {
         this.context = (_ => {
             if (settings.context !== undefined) {
                 if (settings.context.data !== undefined) {
+                    /* Try to add banner_id and banner_name to sentry context */
                     if (settings.context.data.banner_id && settings.context.data.banner_name) {
                         this.RavenInstance.setTagsContext({ banner_id: settings.context.data.banner_id, banner_name: settings.context.data.banner_name });
                     }
@@ -197,9 +215,11 @@ class Exp {
 
     configureRaven(noConflict) {
         if (noConflict) {
+            /* Create new Raven instance, good for isolating the context between web-layers */
             this.RavenInstance = Raven.noConflict();
-            this.RavenInstance.config(this.RAVEN_PROJECT, { tags: { instance: 'exp' } }).install();
-        
+            this.RavenInstance.config(this.RAVEN_PROJECT, this.sentry.options).install();
+            
+            /* Try to extrack users exponea cookie, instance specific */
             if (this.RavenInstance.isSetup()) {
                 var exp_cookie = false;
                 document.cookie.split(/\s*;\s*/).forEach(function(val) {var [k,v]=val.split(/=/);if(k=='__exponea_etc__') exp_cookie = decodeURIComponent(v);});
@@ -480,6 +500,7 @@ class Exp {
                 siblingElement: expFor.nextElementSibling
             };
             if (arrayName in this.__storage.loopDefinitions) {
+                /* set siblingElement only if it exists and doesn't have exp-for */
                 const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
                 this.__storage.loopDefinitions[arrayName].push({
                     template: template,
@@ -487,6 +508,7 @@ class Exp {
                     siblingElement: sibling
                 });
             } else {
+                /* set siblingElement only if it exists and doesn't have exp-for */
                 const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
                 this.__storage.loopDefinitions[arrayName] = [{
                     template: template,
