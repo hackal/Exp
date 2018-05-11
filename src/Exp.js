@@ -63,7 +63,7 @@ class Exp {
         /* Find DOM element which contains Exp code */
         this.el = settings.el || null;
         /* Find DOM element to which append HTML code */
-        this.attach = settings.attach || null;
+        this.insert = settings.insert || null;
         
         /* Initializing data model */
         this.data = settings.data || {};
@@ -322,8 +322,8 @@ class Exp {
             let el = document.createElement('div');
             el.innerHTML = this.html.trim();
             /* Append the element to target or to body */
-            if (this.attach !== null) {
-                this.app = document.querySelector(this.attach).appendChild(el.firstChild);
+            if (this.insert !== null) {
+                this.app = document.querySelector(this.insert).appendChild(el.firstChild);
             } else {
                 this.app = document.body.appendChild(el.firstChild);
             }
@@ -531,22 +531,30 @@ class Exp {
         });
     }
 
+    /* Execute filters on exp-bind */
     writeBindValue(value, el) {
         const parsedAttributes = el.getAttribute('exp-bind').split('|');
         
+        /* Has filters */
         if (parsedAttributes.length > 1) {
+            /* Store intermediate value between each filter execution */
             let intermediateValue = value;
 
+            /* Execute each filter */
             for (let i = 1; i < parsedAttributes.length; i++) {
+                /* Get filter name */
                 const filter = parsedAttributes[i].trim();
-
+                
                 if (filter in this.filters) {
+                    /* Update intermediate value */
                     intermediateValue = this.filters[filter].call(this.model, intermediateValue);
                 }
             }
 
+            /* Set value */
             el.textContent = intermediateValue;
         } else {
+            /* Set value */
             el.textContent = value;
         }
     }
