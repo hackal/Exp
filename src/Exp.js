@@ -6,7 +6,7 @@ class Exp {
 
         this.RavenInstance = undefined;
         this.RAVEN_PROJECT = '';
-        this.RAVEN_CDN = 'https://cdn.ravenjs.com/3.24.2/raven.min.js';
+        const RAVEN_CDN = 'https://cdn.ravenjs.com/3.24.2/raven.min.js';
         
         /* Prepare sentry config */
         this.sentry = (_ => {
@@ -34,7 +34,7 @@ class Exp {
         if (this.sentry.use && typeof(Raven) === "undefined") { // Sentry SDK not present
             /* jQuery getScript polyfill */
             const getScript = require('./helpers/getScript.js');
-            getScript(this.RAVEN_CDN, _ => {
+            getScript(RAVEN_CDN, _ => {
                 /* Configure sentry */
                 this.configureRaven(this.sentry.noConflict);
 
