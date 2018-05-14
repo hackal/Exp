@@ -70,7 +70,7 @@ class Exp {
         /* Controller methods */
         this.methods = settings.methods || {};
         /* Filters */
-        this.filters = settings.filters || {};
+        this.formatters = settings.formatters || {};
 
         /* Initialization of Exp app */
         this.app = null;
@@ -545,9 +545,9 @@ class Exp {
                 /* Get filter name */
                 const filter = parsedAttributes[i].trim();
                 
-                if (filter in this.filters) {
+                if (formatter in this.formatters) {
                     /* Update intermediate value */
-                    intermediateValue = this.filters[filter].call(this.model, intermediateValue);
+                    intermediateValue = this.formatters[formatter].call(this.model, intermediateValue);
                 }
             }
 
