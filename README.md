@@ -1,11 +1,13 @@
 # Exp framework
 
+
 ## Introduction
 Exp framework is a lightweigth minimalistic JavaScript framework designed specifically for building banners in Exponea platform. Many of architectural designs reflect this aim.
 
-One of the main motivations is to code in a declarative manner rather than imperative. Exp framework can be thought of as an engine which performs many unneccessary routines on behalf of you.
+One of the main motivations is to code in a declarative manner rather than procedural. Exp framework can be thought of as an engine which performs many unneccessary routines on behalf of you.
 
 Neccesarrily to mention, we have been greatly influenced by already existing frameworks such as VueJS or AngularJS.
+
 
 ## Installation
 1. Clone repository
@@ -15,7 +17,8 @@ Neccesarrily to mention, we have been greatly influenced by already existing fra
 
 Note that running `npm run start` will open up server on `localhost:1234`, where you have interactive Exp tutorials and further explanations.
 
-## Example of Exp
+
+## Example
 The following example illustrates the power of Exp, specifically iterating over an array using `exp-for`.
 
 ```html
@@ -41,7 +44,9 @@ var banner = new Exp({
 </script>
 ```
 
+
 ## Documentation
+
 
 ### JavaScript Exp constructor
 The framework is initialized through the Exp object, which you have to instantiate with proper dictionary argument, describing the setting.
@@ -50,23 +55,24 @@ var banner = new Exp(settings)
 ```
 The `settings` object has the following available attributes
 
-| Key               | Type        | Description | Example     |
+| Key               | Value       | Description | Example     |
 | ----------------- | ----------- | ----------- | ----------- |
-| `context`         | Dictionary  | The Exponea weblayer context data that are passed from Exponea JS SDK. | `{ banner_id: "123" }` |
-| `data`            | Dictionary  | Data initially populating the model. | `{ sizes: ['large', 'small'], logged_in: false }` |
-| `html`            | String      | A custom HTML code of the weblayer (replaces the original Exponea web-layer HTML).  Either `el` or `html` should be used. | `"<div class="test">aaa</div>"` |
+| `context`         | Dictionary  | The Exponea weblayer context data that are passed from Exponea JS SDK. | `{ banner_id: "123" }` or `this` when working in Exponea weblayer editor |
 | `el`              | String      | Selector which points to an element on which Exp will be initialised. Either `el` or `html` should be used. | `".exp-banner"` |
-| `insert`          | String      | Selector which points to an element that the `html` code will be inserted into as a child. Only if `html` is used. | `".banner-window"` |
-| `style`           | String      | A custom CSS code of the web-layer (replaces the original Exponea web-layer CSS). Only if `insert` is used. | `.test{color: blue;}` |
-| `scoped`          | Boolean     | Adding a generated hash to weblayers CSS, causing the CSS to affect only the web-layer. Default `false`. | `true` |
-| `tracking`        | Boolean     | Default tracking of events `banner(show)` and `banner(close)`. Default `true`. | `false` |
-| `control_group`   | Boolean     | Weblayer will not be shown, but tracking will run as for a custom control group. Default `false`. | `false` |
+| `insert`          | String      | Selector which points to an element that the `html` code will be inserted into as a child. Default `document.body`. | `".banner-window"` |
+| `data`            | Dictionary  | Data initially populating the model. | `{ sizes: ['large', 'small'], logged_in: false }` |
 | `methods`         | Dictionary  | Definition of the user functions, that can be used in JS or triggered by HTML objects. | `{ onClick: () => alert("Hello, World!) }` |
-| `mounted`         | Function    | A function that is called when the web-layer is loaded. | `function() { setTimeout(function() { this.ref.header.style.display = “none” }, 5000) }`
+| `html`            | String      | A custom HTML code of the weblayer.  Either `el` or `html` should be used. | `"<div class="test">aaa</div>"` |
+| `style`           | String      | A custom CSS code of the weblayer. | `.test{color: blue;}` |
+| `scoped`          | Boolean     | Adding a generated hash to weblayers CSS rules, causing the CSS to affect only the weblayer. Default `false`. | `true` |
+| `tracking`        | Boolean     | Default tracking of event `banner` when weblayer is showed. Default `true`. | `false` |
+| `control_group`   | Boolean     | Weblayer will not be shown, but tracking will run as for a custom control group. Default `false`. | `false` |
+| `mounted`         | Function    | A function that is called when the weblayer is loaded. | `function() { setTimeout(function() { this.ref.header.style.display = “none” }, 5000) }`
 | `trigger`         | Dictionary  | Specification of the trigger that activates the weblayer. | `{ type: "onready", delay: 1000 }` |
 | `backdrop`        | Dictionary or Boolean | CSS style for the backdrop for the weblayer. Default `false`. | `{ background: rgba(0, 0, 0, 0.5) }` |
-| `branded`         | `"black"` or `"white"` or `false` | Adding Exponea branding in the selected color. Default `false` | `"white"` |
+| `branded`         | String or Boolean | Adding Exponea branding in the selected color. Default `false`. Available options: `"black"`, `"white"` and `false`. | `"white"` |
 | `recommendations` | Dictionary  | Definition of recommendation models used with the banner. | `{ rcm1: {id: "123", total: 4} }` |
+
 
 ### HTML Exp attributes
 Exp framework is able to recognize the following set of HTML attributes and add corresponding logic.
@@ -76,33 +82,42 @@ Exp framework is able to recognize the following set of HTML attributes and add 
 | `exp-bind`        | Variable    | Updating text real-time with the value of JavaScript variable (i.e. JavaScript -> HTML binding). | `<span exp-bind="product.name"></span>` |
 | `exp-model`       | Variable    | Updates the JavaScript variable value with the input value (i.e. HTML -> JavaScript binding). | `<input exp-model="email">` |
 | `exp-if`          | Variable    | Showing element if the value of the variable is true. | `<div exp-if="bonus_club">Discount 50%</div>` |
-| `exp-for`         | Iteration   | Copying HTML element for every element in array and populating it with corresponding values. | `<div exp-for="product in products"><span exp-bind="product.title"></span><img exp-src="product.url"></div>` |
-| `exp-rcm`         | Iteration   | Copying HTML element for every element in array returned by Exponea recommendation and populating it with corresponding values. | `<div exp-rcm="item in rcm1"><span exp-bind="item.name"></span><img exp-src="item.img_src"></div>` |
+| `exp-for`         | Iteration   | Copying HTML elements for every element in array and populating it with corresponding values. | `<div exp-for="product in products"><span exp-bind="product.title"></span></div>` |
+| `exp-rcm`         | Iteration   | Copying HTML elements for every element in array returned by Exponea recommendation and populating it with corresponding values. | `<div exp-rcm="item in rcm1"><span exp-bind="item.name"></span></div>` |
 | `exp-click`       | Method      | Calling a custom method when clicked. | `<button exp-click="submit_form">` |
 | `exp-src`         | Variable    | The `img` object will get a source given by the variable value. | `<img exp-src="product.img">` |
 | `exp-action`      | N/A         | Clicking will cause a default banner event with `click` action. | `<div class="exponea-button" exp-action><a href="http://exponea.com/careers">Join us!</a></div>` |
 | `exp-close`       | N/A         | Clicking will remove banner. | `<button class="exponea-close-button" exp-close></button>` |
 
-Note that there are further special attributes `exp-src`, `exp-href` and `exp-alt` which update HTML attributes and `exp-click`, `exp-submit`, `exp-input`, `exp-hover`, `exp-blur`, `exp-focus`, `exp-mouseenter` and `exp-mouseleave` which add listeners to specific DOM events. Both of these are described in sections bellow.
+Note that there are further special attributes like `exp-click` and `exp-src`, those are `exp-href` and `exp-alt` which update HTML attributes and `exp-submit`, `exp-input`, `exp-hover`, `exp-blur`, `exp-focus`, `exp-mouseenter` and `exp-mouseleave` which add listeners to specific DOM events. Both of these are described in sections bellow.
+
 
 ## Guides
 
-### Three modes of initialising Exp
+
+### Initialisation
 There three modes in which you can initialise Exp. 
 1. **Using already existing DOM element on webpage**
 Using value of `el` attribute (in the Exp constructor options), Exp selects element in the DOM, and initialises Exp over it. That is useful, when the website itself uses Exp and the webpage already contains Exp HTML code. For example, `var banner = Exp({el: "#exp-banner"})`.
 2. **Inserting your custom HTML code**
-Using value of `html` attribute, which contains HTML code as string, it creates the weblayer and inserts it into the DOM element specified through the `insert` attribute. If `insert` is not specified, it adds it to `document.body` by default. For example, `var banner = Exp({insert: "#exp-banner", html: "<p>Hello, World!</p>"})`.
+Using value of `html` attribute, which contains HTML code as string, it creates the weblayer and inserts it into the DOM element specified through the `insert` attribute. If `insert` is not specified, it adds it to `document.body` by default. For example, `var banner = Exp({insert: "#exp-banner", html: "<p>Hello, World!</p>"})` or just `var banner = Exp({html: "<p>Hello, World!</p>"})`.
 3. **Exponea weblayer editor**
 This mode utilises the functionality of Exponea JS SDK. You must pass the Exp constructor the `context` attribute. In the Exponea app, you will usually initalise Exp object as `var banner = Exp({ context: this })`, because `this` contains lots of banner information injected by the Exponea JS SDK (for instance it contains HTML and CSS codes). Hence, in case of using `context` you do not need to pass `html` or `style` attributes, because `this` contains HTML and CSS codes from the Exponea weblayer editor. In case you do include `html`, `html` will by default override the HTML code from `context`.
 
-### Model and data binding
-The most important concept of Exp is of **model**. That can be thought of as a **store**, containing all the variables and data required by the weblayer. Those can be constants, functions, arrays. You initialise model with the `data` attribute as `var banner = Exp({ data: { foo: "bar" }})`. Exp updates this model when user performs an action on the webpage and conversely uses the values from the model to update the view. This design is the **Model-View-Controller** (MVC) paradigm.
-Having that said, Exp is capable of **two-way binding** between HTML and JavaScript. We can think of the two bindings as Model-View and Controller-Model bindings.
-**Model-View** binding is from JavaScript to HTML. Any changes in the JavaScript model can get reflected on the view. You must use the `exp-bind` attribute in HTML element. For instance, `<p exp-bind="message"></p>` inserts and updates the text in the element with the current value of `message` variable in the model.
-**Controller-Model** binding is from HTML to JavaScript. The JavaScript model can get updated from HTML events using the `exp-model` HTML attribute. For instance, `<input exp-model="message" type="text" />` will update the variable `message` in the model with the value inserted into the input element by the user.
 
-### Using methods
+### Model and data binding
+The most important concept of Exp is of **model**. That can be thought of as a **store**, containing all the variables and data required by the weblayer. Those can be constants, functions, arrays.
+
+You initialise model with the `data` attribute, for instance, `var banner = Exp({ data: { foo: "bar" }})`. Firstly, Exp creates a variable in the model called `foo` and populates it with value `"bar"`. After the weblayer is rendered, Exp updates the model whenever user performs an action through a binded method. Also conversely, Exp uses the values from the model to update the view. This design is the **Model-View-Controller** (MVC) paradigm.
+
+Having that said, Exp is capable of **two-way binding** between HTML and JavaScript. We can think of the two bindings as **Model-View** and **Controller-Model** bindings.
+
+**Model-View** binding is from JavaScript to HTML. Any changes in the JavaScript model can get reflected on the view. You must use the `exp-bind` attribute in HTML element. For instance, `<p exp-bind="foo"></p>` inserts and updates the text in the element with the current value of `foo` variable in the model, hence after initialization it will be `"bar"`.
+
+**Controller-Model** binding is from HTML to JavaScript. The JavaScript model can get updated from HTML events using the `exp-model` HTML attribute. For instance, `<input exp-model="foo" type="text" />` will update the variable `foo` in the model with the value inserted into the input element by the user.
+
+
+### Methods
 In the methods scope, you can access the model via `this` object. Exp calls methods with the scope of the model. To illustrate the example, suppose we have a banner which shows an incrementing counter.
 ```html
 <div id="banner">
@@ -128,9 +143,10 @@ var banner = new Exp({
 })
 </script>
 ```
-Clearly, we can access the model variable `counter` from within the method. The same applies for methods, as illustrated in the `incrementByTwo` method.
+Clearly, we can access the model variable `counter` from within the method. The same applies for methods, as illustrated in the `incrementByTwo` method. Exp adds **both variables and methods** into the model.
 
-### Iterations over array with `exp-for`
+
+### Iterations
 Exp makes iterating over arrays extremely easy and efficient. When you have an array declared in the model, you can iterate over it in the following fashion.
 ```html
 <div id="banner">
@@ -152,7 +168,7 @@ var banner = new Exp({
 })
 </script>
 ```
-Notice that `numbers` array contains primitive values, so we can later access it just by relative variable `number`. On the other hand, `people` is an array of objects, so we have to access nested properties within `exp-for` as `person.age`. There is no limit on the nesting. 
+Notice that `numbers` array contains primitive values, so we can later access it just by relative variable `number`. On the other hand, `people` is an array of objects, so we have to access nested properties within `exp-for` as `person.age`. There is no limit on the depth of the nesting. 
 Also, beware of how Exp renders the `exp-for` elements. The following shall be generated for the snippet above,
 ```html
 <div id="banner">
@@ -176,13 +192,12 @@ Also, beware of how Exp renders the `exp-for` elements. The following shall be g
 </div>
 ```
 
+
 ### Using conditionals
 Suppose you want to hide some DOM elements in case of some specific event. You can use the `exp-if` functionality. In the attribute of the HTML element specify the boolean variable, subject to which the DOM element will (dis)appear. For example,
 ```html
 <div>
-  <span exp-if="seen">
-    Now you see me
-  </span>
+  <span exp-if="seen">Now you see me</span>
 </div>
 <script>
 var banner3 = new Exp({
@@ -195,7 +210,8 @@ var banner3 = new Exp({
 ```
 This wil show text *Now you see me* only when `seen` variable is set to `true`.
 
-### Updating HTML element attributes
+
+### HTML element attributes
 Currently we support only updating `src`, `href` and `alt` HTML attributes. Suppose you want to update one of these, lets say `href`. Then in your target HTML element create `exp-href` attribute and bind it to any value, as you do normally with `exp-bind`. For example,
 ```html
 <image exp-href="product.url" />
@@ -204,6 +220,7 @@ Exp then creates a new attribute `href` and pastes in the binded JavaScript valu
 ```html
 <image exp-href="product.url" href="www.example.com/product1" />
 ```
+
 
 ### Listeners to DOM events
 Currently we support only listening to `click`, `submit`, `input`, `hover`, `blur`, `focus`, `mouseenter` and `mouseleave` DOM events. If you want to bind some function to this event, suppose you want to add listener to `submit`, then create `exp-submit` attribute in the target element. For example
@@ -220,7 +237,8 @@ var banner = new Exp({
 ```
 This will create listener on the `form` element on `submit` event and call `submitForm` function with the `event` as an argument.
 
-### Triggers and their usage
+
+### Triggers
 With Exp, it became very easy to setup specific predefined scenarios which trigger the weblayer to render. Currently we support `onready`, `onexit` and `onaction` triggers, where each must be declared with different parameters. Lets go through all of them.
 
 #### `onready` trigger
@@ -256,8 +274,9 @@ var banner = new Exp({
 })
 ```
 
+
 ### Recommendations
-Exp includes a utility for working with Exponea recommendations. `exp-rcm` directive, works the same way as `exp-for` but it does a little more work in the background to make our lives easier.
+Exp includes a utility for working with Exponea recommendations. You **must use** the `context` option in the constructor to pass the Exponea JS SDK. Afterwards, use the `exp-rcm` directive, which works the same way as `exp-for` but it does a little more work in the background to make our lives easier.
 Below is an example of using `exp-rcm` for rendering 4 products with their image, name, price and link in a table:
 ```html
 <div>
@@ -281,18 +300,22 @@ var banner = new Exp({
     context: this,
     recommendations: {
         products: {
-            id: "recommendationId",
-            total: 4
+            id: "recommendationId", /* Required. Valid Exponea recommendation ID */
+            total: 4, /* Required. The total amount of recommended items to be displayed */
+            loadingKey: "foo" /* Optional, default undefined. Name of the model boolean variable, which is set to true once recommendation is loaded */
         }
     }
 })
 </script>
 ```
+Note that the `recommendationId` must be a valid recommendation ID generated by Exponea. Example above depicts all the available options.
+
 
 ### Event tracking
-Events can be tracked through the Exponea JS SDK only when you use Exp from Exponea weblayer editor and instantiate the banner object with the `context: this` attribute. Later, there are two ways how you can track events to Exponea.
+Events can be tracked through the Exponea JS SDK **only when you use Exp from Exponea weblayer editor** and instantiate the banner object with the `context: this` attribute. Later, there are two ways how you can track events to Exponea.
 1. Setup **default tracking** through settings `tracking: true`
-When the banner is displayed to the user it will automatically track `banner` event with `action: show` and other banner specific properties. Similarly, when a user closes a banner through a DOM element with `exp-close` attribute, a banner event with `action: close` is automatically tracked.
+When the banner is displayed to the user it will automatically track `banner` event with `action: show` and attributes including other banner specific properties. Similarly, when a user closes a banner through a DOM element with `exp-close` attribute, a banner event with `action: close` is automatically tracked.
+
 It is possible to disable automatic tracking of the banner by setting `tracking: false` in the Exp constructor settings. By default it is set to `true`.
 2. **Custom tracking** through Exponea JS SDK
 Users can track from within methods in model by calling `this.sdk.track("eventName", properties)`. For example,
@@ -306,4 +329,3 @@ var banner = Exp({
     }
 })
 ```
-
