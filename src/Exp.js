@@ -563,7 +563,7 @@ class Exp {
 
     /* Method for updating all exp-binds */
     updateBindings(key, value, el = null) {
-        const bindings = this.select(`*[exp-bind~="${key}"]`);
+        const bindings = this.select(`*[exp-bind^="${key}"]`);
         bindings.forEach(el => {
             this.writeBindValue(value, el);
         });
