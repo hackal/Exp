@@ -77,7 +77,7 @@ The `settings` object has the following available attributes
 | ----------------- | ----------- | ----------- | ----------- |
 | `context`         | Dictionary  | The Exponea weblayer context data that are passed from Exponea JS SDK. | `{ banner_id: "123" }` or `this` when working in Exponea weblayer editor |
 | `el`              | String      | Selector which points to an element on which Exp will be initialised. Either `el` or `html` should be used. | `"#exp-banner"` |
-| `insert`          | String      | Selector which points to an element that the `html` code will be inserted into as a child. Default `document.body`. | `".banner-window"` |
+| `insert`          | String      | Selector which points to an element that the `html` code will be inserted into as a child. Default `document.body`. | `"#banner-window"` |
 | `data`            | Dictionary  | Data initially populating the model. | `{ sizes: ['large', 'small'], logged_in: false }` |
 | `methods`         | Dictionary  | Definition of the user functions, that can be used in JS or triggered by HTML objects. | `{ onClick: () => alert("Hello, World!) }` |
 | `html`            | String      | A custom HTML code of the weblayer.  Either `el` or `html` should be used. | `"<div class="test">aaa</div>"` |
