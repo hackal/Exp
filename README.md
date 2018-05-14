@@ -15,9 +15,6 @@
     * [HTML element attributes](#html-element-attributes)
     * [Listeners to DOM events](#listeners-to-dom-events)
     * [Triggers](#triggers)
-        * [onready trigger](#onready-trigger)
-        * [onexit trigger](#onexit-trigger)
-        * [onaction trigger](#onaction-trigger)
     * [Recommendations](#recommendations)
     * [Event tracking](#event-tracking)
 
