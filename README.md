@@ -1,5 +1,26 @@
 # Exp framework
 
+[Introduction](#introduction)
+[Installation](#installation)
+[Example](#example)
+[Documentation](#documentation)
+    * [JavaScript Exp constructor](#javascript-exp-constructor)
+    * [HTML Exp attributes](#html-exp-attributes)
+[Guides](#guides)
+    * [Initialisation](#initialisation)
+    * [Model and data binding](#model-and-data-binding)
+    * [Methods](#methods)
+    * [Iterations](#iterations)
+    * [Conditionals](#conditionals)
+    * [HTML element attributes](#html-element-attributes)
+    * [Listeners to DOM events](#listeners-to-dom-events)
+    * [Triggers](#triggers)
+        * [onready trigger](#onready-trigger)
+        * [onexit trigger](#onexit-trigger)
+        * [onaction trigger](#onaction-trigger)
+    * [Recommendations](#recommendations)
+    * [Event tracking](#event-tracking)
+
 
 ## Introduction
 Exp framework is a lightweigth minimalistic JavaScript framework designed specifically for building banners in Exponea platform. Many of architectural designs reflect this aim.
@@ -193,7 +214,7 @@ Also, beware of how Exp renders the `exp-for` elements. The following shall be g
 ```
 
 
-### Using conditionals
+### Conditionals
 Suppose you want to hide some DOM elements in case of some specific event. You can use the `exp-if` functionality. In the attribute of the HTML element specify the boolean variable, subject to which the DOM element will (dis)appear. For example,
 ```html
 <div>
