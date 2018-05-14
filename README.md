@@ -1,43 +1,24 @@
 # Exp framework
 
-[Introduction](#introduction)
-
-[Installation](#installation)
-
-[Example](#example)
-
-[Documentation](#documentation)
-
+* [Introduction](#introduction)
+* [Installation](#installation)
+* [Example](#example)
+* [Documentation](#documentation)
     * [JavaScript Exp constructor](#javascript-exp-constructor)
-
     * [HTML Exp attributes](#html-exp-attributes)
-
-[Guides](#guides)
-
+* [Guides](#guides)
     * [Initialisation](#initialisation)
-
     * [Model and data binding](#model-and-data-binding)
-
     * [Methods](#methods)
-
     * [Iterations](#iterations)
-
     * [Conditionals](#conditionals)
-
     * [HTML element attributes](#html-element-attributes)
-
     * [Listeners to DOM events](#listeners-to-dom-events)
-
     * [Triggers](#triggers)
-
         * [onready trigger](#onready-trigger)
-
         * [onexit trigger](#onexit-trigger)
-
         * [onaction trigger](#onaction-trigger)
-
     * [Recommendations](#recommendations)
-    
     * [Event tracking](#event-tracking)
 
 
