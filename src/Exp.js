@@ -533,19 +533,19 @@ class Exp {
         });
     }
 
-    /* Execute filters on exp-bind */
+    /* Execute formatters on exp-bind */
     writeBindValue(value, el) {
         const parsedAttributes = el.getAttribute('exp-bind').split('|');
         
-        /* Has filters */
+        /* Has formatters */
         if (parsedAttributes.length > 1) {
-            /* Store intermediate value between each filter execution */
+            /* Store intermediate value between each formatter execution */
             let intermediateValue = value;
 
-            /* Execute each filter */
+            /* Execute each formatter */
             for (let i = 1; i < parsedAttributes.length; i++) {
-                /* Get filter name */
-                const filter = parsedAttributes[i].trim();
+                /* Get formatter name */
+                const formatter = parsedAttributes[i].trim();
                 
                 if (formatter in this.formatters) {
                     /* Update intermediate value */
