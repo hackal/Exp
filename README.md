@@ -76,7 +76,7 @@ The `settings` object has the following available attributes
 | Key               | Value       | Description | Example     |
 | ----------------- | ----------- | ----------- | ----------- |
 | `context`         | Dictionary  | The Exponea weblayer context data that are passed from Exponea JS SDK. | `{ banner_id: "123" }` or `this` when working in Exponea weblayer editor |
-| `el`              | String      | Selector which points to an element on which Exp will be initialised. Either `el` or `html` should be used. | `".exp-banner"` |
+| `el`              | String      | Selector which points to an element on which Exp will be initialised. Either `el` or `html` should be used. | `"#exp-banner"` |
 | `insert`          | String      | Selector which points to an element that the `html` code will be inserted into as a child. Default `document.body`. | `".banner-window"` |
 | `data`            | Dictionary  | Data initially populating the model. | `{ sizes: ['large', 'small'], logged_in: false }` |
 | `methods`         | Dictionary  | Definition of the user functions, that can be used in JS or triggered by HTML objects. | `{ onClick: () => alert("Hello, World!) }` |
@@ -232,11 +232,11 @@ This wil show text *Now you see me* only when `seen` variable is set to `true`.
 ### HTML element attributes
 Currently we support only updating `src`, `href` and `alt` HTML attributes. Suppose you want to update one of these, lets say `href`. Then in your target HTML element create `exp-href` attribute and bind it to any value, as you do normally with `exp-bind`. For example,
 ```html
-<image exp-href="product.url" />
+<img exp-href="product.url" />
 ```
 Exp then creates a new attribute `href` and pastes in the binded JavaScript value. It also updates the `href` attribute whenever the variable in the model changes. So, after initialisation it can look like this
 ```html
-<image exp-href="product.url" href="www.example.com/product1" />
+<img exp-href="product.url" href="www.example.com/product1" />
 ```
 
 
