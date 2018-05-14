@@ -348,23 +348,23 @@ banner.$validateEmail(banner.email) // => true</code></pre>
     <p>In the future, you can consult the <a href="#">API reference</a> for a full list of instance properties and methods.</p>
     <h3 id="instance-lifecycle-hooks">Instance Lifecycle Hooks</h3>
     <p>This section is work in progress.</p>
-    <h2 id="filters">Filters</h2>
-    <p>Exp allows you to define filters that can be used to apply common text formatting. Filters are usable only with <code>exp-bind</code> directive. Filters should be appended to the end of the expression denoted by the "pipe" symbol:</p>
+    <h2 id="formatters">Formatters</h2>
+    <p>Exp allows you to define formatters that can be used to apply common text formatting. Formatters are usable only with <code>exp-bind</code> directive. Formatters should be appended to the end of the expression denoted by the "pipe" symbol:</p>
     <pre><code>&lt;p exp-bind=&quot;message | uppercase&quot;&gt;&lt;/p&gt;</code></pre>
-    <p>You can define filters on the Exp instance.</p>
+    <p>You can define formatters on the Exp instance.</p>
     <pre><code>var banner = new Exp({
   context: this,
   data: {
     message: 'hi there'
   },
-  filters: {
+  formatters: {
     uppercase: function(value) {
       return value.toUpperCase()
     }
   },
   branded: false
 })</code></pre>
-    <p>Below is an example of our <code>uppercase</code> filter being used:</p>
+    <p>Below is an example of our <code>uppercase</code> formatter being used:</p>
     <div class="output">
       <div id="uppercase">
         <input type="text" exp-model="message">
@@ -377,7 +377,7 @@ banner.$validateEmail(banner.email) // => true</code></pre>
       data: {
         message: 'Hello Exp!'
       },
-      filters: {
+      formatters: {
         uppercase: function(val) {
           return val.toUpperCase()
         }
@@ -385,9 +385,9 @@ banner.$validateEmail(banner.email) // => true</code></pre>
       branded: false
     })
     </script>
-    <p>The filter’s function always receives the expression’s value (the result of the former chain) as its first argument. In the above example, the <code>uppercase</code> filter function will receive the value of message as its argument.</p>
-    <p>Filters can be chained:</p>
-    <pre><code>&lt;p exp-bind=&quot;message | filterA | filterB&quot;&gt;&lt;/p&gt;</code></pre>
+    <p>The formatter’s function always receives the expression’s value (the result of the former chain) as its first argument. In the above example, the <code>uppercase</code> formatter function will receive the value of message as its argument.</p>
+    <p>Formatters can be chained:</p>
+    <pre><code>&lt;p exp-bind=&quot;message | formatterA | formatterB&quot;&gt;&lt;/p&gt;</code></pre>
     <h2 id="recommendations">Recommendations</h2>
     <p>Exp includes a small utility for working with Exponea recommendations. <code>exp-rcm</code> directive, works the same way as <code>exp-for</code> but it does a little more work in the background to make our lifes easier.</p>
     <p>Below is an example of using <code>exp-rcm</code> for rendering 4 products with their image, name, price and link in a table:</p>
