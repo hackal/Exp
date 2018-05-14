@@ -59,6 +59,7 @@ class Exp {
         return this.model;
     }
 
+    /* Initialize banner and model */
     initialize(settings) {
         /* Find DOM element which contains Exp code */
         this.el = settings.el || null;
@@ -213,6 +214,7 @@ class Exp {
         return this.inject();
     }
 
+    /* Configure Raven SDK */
     configureRaven(noConflict) {
         if (noConflict) {
             /* Create new Raven instance, good for isolating the context between web-layers */
