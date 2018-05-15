@@ -347,3 +347,56 @@ var banner = Exp({
     }
 })
 ```
+
+
+## Formatters
+Exp allows you to define formatters that can be used to apply common **text formatting**. Formatters are usable only with `exp-bind` directive. Formatters should be appended to the end of the expression denoted by the "pipe" symbol `|`. An example can look like this,
+```html
+<p exp-bind="greetings | trim | uppercase"></p>
+<script>
+var banner = new Exp({
+    context: this,
+    data: {
+        message: 'hi lukas  '
+    },
+    formatters: {
+        uppercase: function(str) {
+            return str.toUpperCase();
+        },
+        trim: function(str) {
+            return str.trim();
+        }
+    },
+    branded: false
+})
+</script>
+```
+Exp goes through all the formatters from left-to-right and applies the transformations on the string, so that the following will be outputed:
+```html
+<p exp-bind="greetings | trim | uppercase">HI LUKAS</p>
+```
+
+
+## Sentry
+Exp is fully integrated with [Sentry.io](https://sentry.io/). Sentry is an open-source error tracking tool that helps developers monitor and fix crashes in real-time. By default Sentry is turned off. Sentry can be enabled on Exp instance in the following way,
+```javascript
+var banner = new Exp({
+  context: this,
+  sentry: {
+    use: true, /* Enables Sentry usage. Default false */
+    noConflict: true, /* Creates independent Raven instance from potentially others on page. Default true */
+    project: '', /* Endpoint for Sentry URL. Default '' */
+    options: { /* Options for Sentry tracking, can be used for tagging for example. Default {} */
+        tags: {
+            project_id: "exp-test",
+            instance: "exp"
+        }
+    }
+  }
+})
+```
+By default Exp will make embed **Raven JavaScript SDK** from [Sentry CDN](https://cdn.ravenjs.com/3.24.2/raven.min.js). It will create new instance of Raven object per each weblayer. 
+
+`noConflict` mode can be set to false to use clients Raven integration. One downside of disabling `noConflict` mode is that we will lose the ability to correctly identify which weblayers are causing errors. It is recommended to always use `noConflict: true` setting.
+
+If `context: this` is set from Exponea weblayer editor, Exp will automatically tag the Sentry events with weblayer ID, weblayer name and project token.
