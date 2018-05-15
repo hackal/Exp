@@ -14,7 +14,7 @@ class Exp {
             let config = {
                 use: false,
                 noConflict: true,
-                project: 'https://0a9f9e0203be4cff88075453bfdcce3b@sentry.exponea.com/12',
+                project: '',
                 options: {}
             };
             if (settings.sentry === undefined) {
@@ -70,7 +70,7 @@ class Exp {
         this.data = settings.data || {};
         /* Controller methods */
         this.methods = settings.methods || {};
-        /* Filters */
+        /* Formatters */
         this.formatters = settings.formatters || {};
 
         /* Initialization of Exp app */
