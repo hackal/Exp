@@ -353,7 +353,7 @@ var banner = Exp({
 ```
 
 
-## Formatters
+### Formatters
 Exp allows you to define formatters that can be used to apply common **text formatting**. Formatters are usable only with `exp-bind` directive. Formatters should be appended to the end of the expression denoted by the "pipe" symbol `|`. An example can look like this,
 ```html
 <p exp-bind="greetings | trim | uppercase"></p>
@@ -381,7 +381,7 @@ Exp goes through all the formatters from left-to-right and applies the transform
 ```
 
 
-## Sentry
+### Sentry
 Exp is fully integrated with [Sentry.io](https://sentry.io/). Sentry is an open-source error tracking tool that helps developers monitor and fix crashes in real-time. By default Sentry is turned off. Sentry can be enabled on Exp instance in the following way,
 ```javascript
 var banner = new Exp({
