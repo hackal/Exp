@@ -5,7 +5,6 @@ class Exp {
         this.model = settings.data || {};
 
         this.RavenInstance = undefined;
-        this.RAVEN_PROJECT = '';
         const RAVEN_CDN = 'https://cdn.ravenjs.com/3.24.2/raven.min.js';
         
         /* Prepare sentry config */
@@ -219,7 +218,7 @@ class Exp {
         if (noConflict) {
             /* Create new Raven instance, good for isolating the context between web-layers */
             this.RavenInstance = Raven.noConflict();
-            this.RavenInstance.config(this.RAVEN_PROJECT, this.sentry.options).install();
+            this.RavenInstance.config(this.sentry.project, this.sentry.options).install();
             
             /* Try to extrack users exponea cookie, instance specific */
             if (this.RavenInstance.isSetup()) {
