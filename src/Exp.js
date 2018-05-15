@@ -260,7 +260,6 @@ class Exp {
 
         /* Renders optional objects alongside with banners */
         if (this.backdrop !== null) this.addBackdrop();
-        console.log(this.branded)
         if (this.branded) this.addBranding();
         /* Adds exponea-animate class to app */
         this.addAnimationClass();
@@ -497,27 +496,21 @@ class Exp {
             /* Delete exp-for attribute */
             template.removeAttribute("exp-for");
             /* Copy template into storage, with the root element */
-            const expForInstance = {
+            let expForInstance = {
                 template: template,
                 parentElement: expFor.parentNode,
                 siblingElement: expFor.nextElementSibling
             };
             if (arrayName in this.__storage.loopDefinitions) {
-                /* set siblingElement only if it exists and doesn't have exp-for */
+                /* Set siblingElement only if it exists and doesn't have exp-for */
                 const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
-                this.__storage.loopDefinitions[arrayName].push({
-                    template: template,
-                    parentElement: expFor.parentNode,
-                    siblingElement: sibling
-                });
+                expForInstance.siblingElement = sibling;
+                this.__storage.loopDefinitions[arrayName].push(expForInstance);
             } else {
-                /* set siblingElement only if it exists and doesn't have exp-for */
+                /* Set siblingElement only if it exists and doesn't have exp-for */
                 const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
-                this.__storage.loopDefinitions[arrayName] = [{
-                    template: template,
-                    parentElement: expFor.parentNode,
-                    siblingElement: sibling
-                }];
+                expForInstance.siblingElement = sibling;
+                this.__storage.loopDefinitions[arrayName] = [expForInstance];
             };
             /* Remove all children elements */
             expFor.remove();
