@@ -1,17 +1,76 @@
 /* Main class */
 class Exp {
     constructor(settings) {
+        /* Initializing model */
+        this.model = settings.data || {};
+
+        this.RavenInstance = undefined;
+        const RAVEN_CDN = 'https://cdn.ravenjs.com/3.24.2/raven.min.js';
+        
+        /* Prepare sentry config */
+        this.sentry = (_ => {
+            /* Default config */
+            let config = {
+                use: false,
+                noConflict: true,
+                project: '',
+                options: {}
+            };
+            if (settings.sentry === undefined) {
+                return config;
+            }
+
+            /* Change default config values */
+            if (settings.sentry.use !== undefined) config.use = settings.sentry.use;
+            if (settings.sentry.noConflict !== undefined) config.noConflict = settings.sentry.noConflict;
+            if (settings.sentry.project !== undefined) config.project = settings.sentry.project;
+            if (settings.sentry.options !== undefined) config.options = settings.sentry.options;
+
+            return config;
+        })();
+        
+        /* Add sentry script if necessary */
+        if (this.sentry.use && typeof(Raven) === "undefined") { // Sentry SDK not present
+            /* jQuery getScript polyfill */
+            const getScript = require('./helpers/getScript.js');
+            getScript(RAVEN_CDN, _ => {
+                /* Configure sentry */
+                this.configureRaven(this.sentry.noConflict);
+
+                /* Initialize banner in sentry context */
+                this.RavenInstance.context(function() {
+                    this.initialize(settings);
+                }.bind(this))
+            })
+        } else if (this.sentry.use) { // Sentry SDK already present
+            /* Configure sentry */
+            this.configureRaven(this.sentry.noConflict);
+
+            /* Initialize banner in sentry context */
+            this.RavenInstance.context(function() {
+                this.initialize(settings);
+            }.bind(this))
+        } else {
+            /* initialize banner without sentry */
+            this.initialize(settings)
+        }
+        
+        return this.model;
+    }
+
+    /* Initialize banner and model */
+    initialize(settings) {
         /* Find DOM element which contains Exp code */
         this.el = settings.el || null;
         /* Find DOM element to which append HTML code */
-        this.attach = settings.attach || null;
-
+        this.insert = settings.insert || null;
+        
         /* Initializing data model */
         this.data = settings.data || {};
         /* Controller methods */
         this.methods = settings.methods || {};
-        /* Initializing model */
-        this.model = {};
+        /* Formatters */
+        this.formatters = settings.formatters || {};
 
         /* Initialization of Exp app */
         this.app = null;
@@ -28,11 +87,11 @@ class Exp {
         /* Backdrop in front of which Exp app will be rendered */
         this.backdrop = settings.backdrop || null;
         /* Adding Exponea branding options, by default black */
-        if (settings.branded === undefined || settings.branded === null || (settings.branded && settings.branded !== "black" && settings.branded !== "white")) {
-            this.branded = "black";
-        } else {
-            this.branded = settings.branded;
-        }
+        this.branded = (_ => {
+            if (settings.branded === undefined) return false;
+            if (settings.branded !== "black" && settings.branded !== "white") return false;
+            else return settings.branded
+        })();
 
         /* Look for either explicit code or for HTML code in context */
         this.html = (_ => {
@@ -53,7 +112,13 @@ class Exp {
         /* Exponea SDK passed through context attribute when using production banners */
         this.sdk = (_ => {
             if (settings.context !== undefined) {
-                if (settings.context.sdk !== undefined) return settings.context.sdk;
+                if (settings.context.sdk !== undefined) {
+                    /* Try to add project token to sentry context */
+                    if (settings.context.sdk._) {
+                        this.RavenInstance.setTagsContext({ project_token: settings.context.sdk._[0][1][0].token });
+                    }
+                    return settings.context.sdk;
+                }
             }
 
             return null;
@@ -61,11 +126,18 @@ class Exp {
         /* Exponea banner context */
         this.context = (_ => {
             if (settings.context !== undefined) {
-                if (settings.context.data !== undefined) return settings.context.data;
+                if (settings.context.data !== undefined) {
+                    /* Try to add banner_id and banner_name to sentry context */
+                    if (settings.context.data.banner_id && settings.context.data.banner_name) {
+                        this.RavenInstance.setTagsContext({ banner_id: settings.context.data.banner_id, banner_name: settings.context.data.banner_name });
+                    }
+                    return settings.context.data;
+                }
             }
 
             return null;
         })();
+        
         /* Check whether banner is in Exponea editor or not */
         this.inPreview = (_ => {
             if (settings.context !== undefined) {
@@ -123,11 +195,13 @@ class Exp {
                 var action = this.trigger.action || "click";
                 const delay = this.trigger.delay || 0;
                 if (this.trigger.element) {
-                    this.trigger.element.addEventListener(action, function() {
+                    const callback = function() {
                         setTimeout(() => {
                             self.inject(self);
                         }, delay);
-                    });
+                        self.trigger.element.removeEventListener(action, callback, false)
+                    }
+                    this.trigger.element.addEventListener(action, callback);
                 }
                 return;
             } else {
@@ -135,8 +209,28 @@ class Exp {
                 throw `Incorrect trigger type ${ this.trigger.type }`;
             }
         }
-        /* If no trigger type inject normally */
+
         return this.inject();
+    }
+
+    /* Configure Raven SDK */
+    configureRaven(noConflict) {
+        if (noConflict) {
+            /* Create new Raven instance, good for isolating the context between web-layers */
+            this.RavenInstance = Raven.noConflict();
+            this.RavenInstance.config(this.sentry.project, this.sentry.options).install();
+            
+            /* Try to extrack users exponea cookie, instance specific */
+            if (this.RavenInstance.isSetup()) {
+                var exp_cookie = false;
+                document.cookie.split(/\s*;\s*/).forEach(function(val) {var [k,v]=val.split(/=/);if(k=='__exponea_etc__') exp_cookie = decodeURIComponent(v);});
+                if (exp_cookie) {
+                    this.RavenInstance.setUserContext( { exponea_cookie: exp_cookie } );
+                };
+            }
+        } else {
+            this.RavenInstance = Raven;
+        }
     }
 
     /* Method for injecting the banner into DOM */
@@ -146,11 +240,11 @@ class Exp {
             this.loaded();
         }
 
-        /* Initialize model */
-        this.initializeModel(this.data);
-
         /* Render Exp banner */
         this.render();
+
+        /* Initialize model */
+        this.initializeModel(this.data);
 
         /* Create the main tunnel of bindings between HTML with JS */
         this.bindModels();
@@ -165,7 +259,7 @@ class Exp {
 
         /* Renders optional objects alongside with banners */
         if (this.backdrop !== null) this.addBackdrop();
-        if (this.branded !== false) this.addBranding();
+        if (this.branded) this.addBranding();
         /* Adds exponea-animate class to app */
         this.addAnimationClass();
 
@@ -176,7 +270,7 @@ class Exp {
 
         /* Call mounted function if set */
         if (this.mounted !== null && !this.control_group) this.mounted.call(this.model);
-
+    
         return this.model;
     }
 
@@ -229,8 +323,8 @@ class Exp {
             let el = document.createElement('div');
             el.innerHTML = this.html.trim();
             /* Append the element to target or to body */
-            if (this.attach !== null) {
-                this.app = document.querySelector(this.attach).appendChild(el.firstChild);
+            if (this.insert !== null) {
+                this.app = document.querySelector(this.insert).appendChild(el.firstChild);
             } else {
                 this.app = document.body.appendChild(el.firstChild);
             }
@@ -241,7 +335,7 @@ class Exp {
         if (this.style !== null) {
             if (this.scoped) {
                 /* Quickly add style which is disabled, rename it and remove it */
-                let style = this.addStyle(this.style, true)
+                let style = this.addStyle(this.style, true);
                 let rules = this.listify(style.sheet.cssRules);
                 var scopedStyle = "";
                 /* Iterate over CSS rules */
@@ -259,10 +353,10 @@ class Exp {
                         scopedStyle = scopedStyle + `}`;
                     }
                 });
-                /* Append scoped style */
-                this.addStyle(scopedStyle);
                 /* Remove original style */
                 style.parentNode.removeChild(style);
+                /* Append scoped style */
+                this.addStyle(scopedStyle);
             } else {
                 /* Append style with global scope */
                 this.addStyle(this.style);
@@ -301,7 +395,7 @@ class Exp {
     /* Initial bindings of methods */
     bindMethods(template = undefined) {
         var self = this;
-        let supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave"];
+        let supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave", "action"];
         let selector = supportedEvents.map(event => {
             return `*[exp-${event}]`;
         });
@@ -309,8 +403,16 @@ class Exp {
         events.forEach(el => {
             supportedEvents.forEach(event => {
                 var method = el.getAttribute('exp-' + event);
-                if (method === null || !(method in self.methods)) return;
                 /* If exp-action is declared then add appropriate EventListener */
+                if (event == 'action') {
+                    el.addEventListener('click', function(e) {
+                        if (this.tracking && this.sdk !== null && this.context !== null) {
+                            this.sdk.track('banner', this.getEventProperties('click'));
+                        }
+                    });
+                }
+
+                if (method === null || !(method in self.methods)) return;
                 el.addEventListener(event, function(e) {
                     self.methods[method].apply(self.model, [e]);
                 });
@@ -321,7 +423,7 @@ class Exp {
     /* Binds DOM object attribute values with model */
     bindAttributes() {
         const self = this;
-        const supportedAttributes = ["src", "href", "alt"];
+        const supportedAttributes = ["src", "href", "alt", "title", "disabled"];
         let selector = supportedAttributes.map(attr => {
             return `*[exp-${attr}]`;
         });
@@ -393,14 +495,20 @@ class Exp {
             /* Delete exp-for attribute */
             template.removeAttribute("exp-for");
             /* Copy template into storage, with the root element */
-            const expForInstance = {
+            let expForInstance = {
                 template: template,
                 parentElement: expFor.parentNode,
                 siblingElement: expFor.nextElementSibling
             };
             if (arrayName in this.__storage.loopDefinitions) {
+                /* Set siblingElement only if it exists and doesn't have exp-for */
+                const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
+                expForInstance.siblingElement = sibling;
                 this.__storage.loopDefinitions[arrayName].push(expForInstance);
             } else {
+                /* Set siblingElement only if it exists and doesn't have exp-for */
+                const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
+                expForInstance.siblingElement = sibling;
                 this.__storage.loopDefinitions[arrayName] = [expForInstance];
             };
             /* Remove all children elements */
@@ -418,11 +526,39 @@ class Exp {
         });
     }
 
-    /* Method for updating all exp-binds */
-    updateBindings(key, value) {
-        const bindings = this.select(`*[exp-bind="${key}"]`);
-        bindings.forEach(el => {
+    /* Execute formatters on exp-bind */
+    writeBindValue(value, el) {
+        const parsedAttributes = el.getAttribute('exp-bind').split('|');
+        
+        /* Has formatters */
+        if (parsedAttributes.length > 1) {
+            /* Store intermediate value between each formatter execution */
+            let intermediateValue = value;
+
+            /* Execute each formatter */
+            for (let i = 1; i < parsedAttributes.length; i++) {
+                /* Get formatter name */
+                const formatter = parsedAttributes[i].trim();
+                
+                if (formatter in this.formatters) {
+                    /* Update intermediate value */
+                    intermediateValue = this.formatters[formatter].call(this.model, intermediateValue);
+                }
+            }
+
+            /* Set value */
+            el.textContent = intermediateValue;
+        } else {
+            /* Set value */
             el.textContent = value;
+        }
+    }
+
+    /* Method for updating all exp-binds */
+    updateBindings(key, value, el = null) {
+        const bindings = this.select(`*[exp-bind^="${key}"]`);
+        bindings.forEach(el => {
+            this.writeBindValue(value, el);
         });
     }
 
@@ -454,7 +590,7 @@ class Exp {
 
     /* Method for updating attributes */
     updateAttributes(key, value) {
-        const supportedAttributes = ["src", "href", "alt"];
+        const supportedAttributes = ["src", "href", "alt", "title", "disabled"];
         let selector = supportedAttributes.map(attr => {
             return `*[exp-${attr}="${key}"]`;
         });
@@ -508,7 +644,7 @@ class Exp {
             expBinds.forEach(el => {
                 const val = el.getAttribute('exp-bind');
                 if (val.indexOf('.') == -1) {
-                    el.textContent = item;
+                    this.writeBindValue(item, el);
                 } else {
                     const keys = val.split('.');
                     var value = this.findLastField(keys.slice(1), item);
@@ -597,9 +733,10 @@ class Exp {
         if (this.app === null) return;
         var branding = document.createElement('object');
         var uuid = this.getUuid();
+        branding.setAttribute(`e${uuid}`, '')
+        this.addStyle(`[e${uuid}]{font-size:11px;position:absolute;opacity:.6;right:5px;bottom:5px;padding-top:0;text-decoration:none;display:block}[e${uuid}]:hover{opacity:.9}[e${uuid}] a{color: ${this.branded}}`);
+        branding.innerHTML = '<a href="https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral" target="_blank">Powered by Exponea</a>';
         this.app.appendChild(branding);
-        branding.innerHTML = '<a href="https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral" e' + uuid + ' target="_blank">Powered by Exponea</a>';
-        this.addStyle('[e' + uuid + ']{font-size:11px;position:absolute;color:' + this.branded + ';opacity:.6;right:5px;bottom:5px;padding-top:0;text-decoration:none}[e' + uuid + ']:hover{opacity:.9}');
     }
 
     /* Adds exponea-animate class which is responsible for smooth transitions */
