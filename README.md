@@ -17,6 +17,8 @@
     * [Triggers](#triggers)
     * [Recommendations](#recommendations)
     * [Event tracking](#event-tracking)
+    * [Formatters](#formatters)
+    * [Sentry](#sentry)
 
 
 ## Introduction
