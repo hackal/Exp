@@ -88,11 +88,11 @@ class Exp {
         /* Backdrop in front of which Exp app will be rendered */
         this.backdrop = settings.backdrop || null;
         /* Adding Exponea branding options, by default black */
-        if (settings.branded === undefined || settings.branded === null || (settings.branded && settings.branded !== "black" && settings.branded !== "white")) {
-            this.branded = "black";
-        } else {
-            this.branded = settings.branded;
-        }
+        this.branded = (_ => {
+            if (settings.branded === undefined) return false;
+            if (settings.branded !== "black" && settings.branded !== "white") return false;
+            else return settings.branded
+        })();
 
         /* Look for either explicit code or for HTML code in context */
         this.html = (_ => {
@@ -260,7 +260,8 @@ class Exp {
 
         /* Renders optional objects alongside with banners */
         if (this.backdrop !== null) this.addBackdrop();
-        if (this.branded !== false) this.addBranding();
+        console.log(this.branded)
+        if (this.branded) this.addBranding();
         /* Adds exponea-animate class to app */
         this.addAnimationClass();
 
