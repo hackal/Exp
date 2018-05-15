@@ -397,6 +397,6 @@ var banner = new Exp({
 ```
 By default Exp will make embed **Raven JavaScript SDK** from [Sentry CDN](https://cdn.ravenjs.com/3.24.2/raven.min.js). It will create new instance of Raven object per each weblayer. 
 
-`noConflict` mode can be set to false to use clients Raven integration. One downside of disabling `noConflict` mode is that we will lose the ability to correctly identify which weblayers are causing errors. It is recommended to always use `noConflict: true` setting.
+`noConflict` mode can be set to `false` to use Raven integration already preconfigured on the website. One downside of disabling `noConflict` mode is that we will lose the ability to correctly identify which weblayers are causing errors. It is recommended to always use `noConflict: true` setting.
 
 If `context: this` is set from Exponea weblayer editor, Exp will automatically tag the Sentry events with weblayer ID, weblayer name and project token.
