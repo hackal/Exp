@@ -90,6 +90,8 @@ The `settings` object has the following available attributes
 | `backdrop`        | Dictionary or Boolean | CSS style for the backdrop for the weblayer. Default `false`. | `{ background: rgba(0, 0, 0, 0.5) }` |
 | `branded`         | String or Boolean | Adding Exponea branding in the selected color. Default `false`. Available options: `"black"`, `"white"` and `false`. | `"white"` |
 | `recommendations` | Dictionary  | Definition of recommendation models used with the banner. | `{ rcm1: {id: "123", total: 4} }` |
+| `sentry`          | Dictionary  | Options settings for Sentry integration | `{use: true, project: ''}` |
+| `formatters`      | Dictionary  | Dictionary of formatters to apply for outputting binded values in view | `{ uppercase: (v) => v.toUpperCase() }` |
 
 
 ### HTML Exp attributes
