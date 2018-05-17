@@ -462,7 +462,11 @@ class Exp {
             /* BUG: does not check the original display value, assumes block */
             const attr = el.getAttribute("exp-if");
             if (this.model[attr] !== null && this.model[attr] !== undefined) {
-                el.style.display = (this.model[attr] ? "block" : "none");
+                if (typeof(this.model[attr]) == "function") {
+                    el.style.display = this.model[attr].call(this.model) ? "block" : "none";
+                } else {
+                    el.style.display = this.model[attr] ? "block" : "none";
+                }
             } else {
                 throw `exp-if attribute ${attr} is not defined in model.`
                 this.model[attr] = null;

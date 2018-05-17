@@ -500,7 +500,9 @@ banner.$validateEmail(banner.email) // => true</code></pre>
   context: this,
   sentry: {
     use: true, // default false
-    noConflict: true // default true
+    noConflict: true, // default true
+    project: '', // sentry project URL
+    options: {} // sentry initialization options (for example tags)
   }
 })</code></pre>
     <p>By default Exp will make embed Raven JavaScript SDK from Sentry CDN. It will run Raven in <code>noConflict</code> mode which will create new instance of Raven object per each web-layer. <code>noConflict</code> mode can be set to false to use clients Raven integration. One downside of disabling noConflict mode is that we will lose the ability to correctly identify which web-layers are causing errors. It is recommended to always use <code>noConflict: true</code>.</p>
