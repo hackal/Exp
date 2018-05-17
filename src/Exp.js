@@ -346,7 +346,17 @@ class Exp {
                     }
                     /* Rule is media query */
                     if (rule instanceof CSSMediaRule) {
-                        scopedStyle = scopedStyle + `@media ${rule.conditionText} {`
+                        let conditionText;
+                        if (!rule.conditionText) {
+                            conditionText = '';
+                            let condTxtArr = Object.keys(rule.media).map(function (objectKey, index) {
+                                return rule.media[objectKey];
+                            });
+                            conditionText = condTxtArr.join(', ');
+                        } else {
+                            conditionText = rule.conditionText;
+                        }
+                        scopedStyle = scopedStyle + `@media ${conditionText} {`;
                         this.listify(rule.cssRules).forEach(rule => {
                             scopedStyle = scopedStyle + this.generateScopedRule(rule);
                         });
