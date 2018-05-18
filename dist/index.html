@@ -51,6 +51,13 @@
   </style>
   <script>hljs.initHighlightingOnLoad();</script>
   <script src="/dist/Exp.js"></script>
+  <script>(function(d,b){if(!d.exponea){var a=function(a,g){function k(c){return function(){var e=arguments;""==a&&"initialize"==c&&e&&e[0].modify&&e[0].modify.overlay&&"loading"==b.readyState&&(b.write('<div id="__inf__overlay__" style="position:absolute;background:#fff;left:0;top:0;width:100%;height:100%;z-index:1000000"></div>'),setTimeout(function(){var a=b.getElementById("__inf__overlay__");a&&b.body.removeChild(a);res.__=!0},e[0].modify.delay||500));d.exponea._.push([a+c,arguments])}}var h=g.split(" "),f,c;res={_:[]};for(c=0;c<h.length;c++)f=h[c],res[f]=k(f);return res};d.exponea=a("","initialize identify update track trackLink trackEnhancedEcommerce getHtml showHtml showBanner showForm ping getAbTest");d.exponea.notifications=a("notifications.","isAvailable isSubscribed subscribe unsubscribe");var a=b.createElement("script"),g="https:"===b.location.protocol?"https:":"http:";a.type="text/javascript";a.async=!0;a.src=g+"//api.exponea.com/js/exponea.min.js";b.getElementsByTagName("head")[0].appendChild(a)}})(window,document);</script>
+<script type="text/javascript">
+    exponea.initialize({
+        "token": "26c242f2-0b15-11e8-ba97-14187733e19e"
+        //, customer: window.loggedInCustomer // replace window.loggedInCustomer with id of your web site customer, e.g. "john.smith@gmail.com"
+});
+</script>
 </head>
 <body>
   <div class="page">
@@ -500,7 +507,9 @@ banner.$validateEmail(banner.email) // => true</code></pre>
   context: this,
   sentry: {
     use: true, // default false
-    noConflict: true // default true
+    noConflict: true, // default true
+    project: '', // sentry project URL
+    options: {} // sentry initialization options (for example tags)
   }
 })</code></pre>
     <p>By default Exp will make embed Raven JavaScript SDK from Sentry CDN. It will run Raven in <code>noConflict</code> mode which will create new instance of Raven object per each web-layer. <code>noConflict</code> mode can be set to false to use clients Raven integration. One downside of disabling noConflict mode is that we will lose the ability to correctly identify which web-layers are causing errors. It is recommended to always use <code>noConflict: true</code>.</p>
