@@ -603,6 +603,7 @@ class Exp {
         });
     }
 
+    /* Method for updating exp-ifs methods */
     updateIfsMethods() {
         const expIfs = this.select(`*[exp-if]`);
         expIfs.forEach(el => {
