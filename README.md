@@ -243,7 +243,7 @@ var banner3 = new Exp({
 })
 </script>
 ```
-This will show text *Variable is set to true* only when `booleanVariable` variable is set to `true`. And it will show *Method is returning true* only when *booleanMethod* returns `true` (50 percent of time in our example).
+This will show text *Variable is set to true* only when `booleanVariable` variable is set to `true`. And it will show *Method is returning true* only when `booleanMethod` returns `true` (50 percent of time in our example).
 
 Note that if `exp-if` is binded to a boolean method (like `booleanMethod` in our example is), then the method is **only evaluted once at initialisation** and does not get called on model changes.
 
