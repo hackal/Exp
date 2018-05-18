@@ -216,21 +216,36 @@ Also, beware of how Exp renders the `exp-for` elements. The following shall be g
 
 
 ### Conditionals
-Suppose you want to hide some DOM elements in case of some specific event. You can use the `exp-if` functionality. In the attribute of the HTML element specify the boolean variable, subject to which the DOM element will (dis)appear. For example,
+Suppose you want to hide some DOM elements in case of some specific event. You can use the `exp-if` functionality. In the attribute of the HTML element specify the **boolean variable in model** or **method returning a boolean**, subject to which the DOM element will (dis)appear. For example,
 ```html
 <div>
-  <span exp-if="seen">Now you see me</span>
+  <span exp-if="booleanVariable">Variable is set to true</span>
+  <span exp-if="booleanMethod">Method is returning true</span>
 </div>
 <script>
 var banner3 = new Exp({
     context: this,
     data: {
-        seen: false
+        booleanVariable: false
+    },
+    methods: {
+        booleanMethod: () => {
+            const x = Math.random();
+            if (x < 0.5) {
+                /* do stuff */
+                return true;
+            } else {
+                /* do stuff */
+                return false;
+            }
+        }
     }
 })
 </script>
 ```
-This wil show text *Now you see me* only when `seen` variable is set to `true`.
+This will show text *Variable is set to true* only when `booleanVariable` variable is set to `true`. And it will show *Method is returning true* only when `booleanMethod` returns `true` (50 percent of time in our example).
+
+Note that if `exp-if` is binded to a boolean method (like `booleanMethod` in our example is), then the method is **only evaluted once at initialisation** and does not get called on model changes.
 
 
 ### HTML element attributes
