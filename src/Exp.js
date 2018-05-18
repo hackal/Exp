@@ -114,7 +114,7 @@ class Exp {
             if (settings.context !== undefined) {
                 if (settings.context.sdk !== undefined) {
                     /* Try to add project token to sentry context */
-                    if (settings.context.sdk._) {
+                    if (this.sentry.use && settings.context.sdk._) {
                         this.RavenInstance.setTagsContext({ project_token: settings.context.sdk._[0][1][0].token });
                     }
                     return settings.context.sdk;
@@ -128,7 +128,7 @@ class Exp {
             if (settings.context !== undefined) {
                 if (settings.context.data !== undefined) {
                     /* Try to add banner_id and banner_name to sentry context */
-                    if (settings.context.data.banner_id && settings.context.data.banner_name) {
+                    if (this.sentry.use && settings.context.data.banner_id && settings.context.data.banner_name) {
                         this.RavenInstance.setTagsContext({ banner_id: settings.context.data.banner_id, banner_name: settings.context.data.banner_name });
                     }
                     return settings.context.data;
