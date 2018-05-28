@@ -13,7 +13,6 @@ install:
 - npm install
 script:
 - parcel build src/index.html --no-minify --public-url / && parcel build src/Exp.js
-- ls dist
 deploy:
   on:
     branch: master
