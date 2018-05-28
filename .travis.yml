@@ -15,7 +15,7 @@ script:
 - parcel build src/index.html --no-minify && parcel build src/Exp.js
 deploy:
   on:
-    tags: true
+    branch: master
   provider: firebase
   skip_cleanup: true
   token:
