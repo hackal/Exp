@@ -22,7 +22,7 @@
 
 
 ## Introduction
-Exp framework is a **lightweigth minimalistic JavaScript framework** designed specifically for building banners in Exponea platform. Many of architectural designs reflect this aim.
+Exp framework is a **lightweigth minimalistic JavaScript framework** designed specifically for building banners in Exponea platform. Many architectural designs reflect this aim.
 
 One of the main motivations is to code in a **declarative** manner rather than procedural. Exp framework can be thought of as an engine which performs many unneccessary routines on behalf of you.
 
