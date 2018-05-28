@@ -12,7 +12,7 @@ before_install:
 install:
 - npm install
 script:
-- parcel build src/index.html && parcel build src/Exp.js
+- parcel build src/index.html --no-minify && parcel build src/Exp.js
 deploy:
   on:
     tags: true
