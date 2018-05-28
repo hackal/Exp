@@ -16,7 +16,7 @@ script:
 deploy:
   on:
     branch: master
-  tags: true
+    tags: true
   provider: firebase
   skip_cleanup: true
   token:
