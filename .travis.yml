@@ -1,0 +1,23 @@
+language: node_js
+node_js:
+- '8'
+cache:
+  directories:
+  - node_modules
+env:
+  global:
+  - secure: mKNIGLrc37/0DKEDhOagO44FmYub5JF1iSbqRnxND16eiOnx8sTseMh9jODE8W8l0U9lNa4xNxs4XvoYOiIOq+Q8wjZLRb5ShUK9nmofVDzoWkJPZ6gSlcPFvgW/F7t9lzc2Widdl+pfI4oCFTVr8YjVaLLWdYYP9eitpoVkSGtrJlOu+6kbYXHqc4dX1LfyDWzrw8I4cFOSsuZ6p3wgoUqn6rTwpIenj9RacWGBdTqin4Zix2wSPBGi60k7WBWoiOflMJLmVtN3mZrdw7fQ+3R/TW7htRwGmKiI/YQ/s0Jws1sFztGsbQ8q42+urTVgrVsNaSwBGKZq36k9KKdtTMUL+ZBUIX9E0NMFne89eRAfzx9EgEPMpGPftMhN+hl6dj9WvmgYo9Jtk6gG1r2lKAuBvKFt5GWzfLb7kEzwO/rxjVoY5zVGUe2TaVhZtGbgwYJ47QDFB6nq8lUNyPKxkq81E8KaZyaLLz8R1x4I45OrJeoqXkzifndWQ7Zxmo5ED96DPSNekIKw54Vq+/geKxDMQ75O/hD4qXSesDs/8a1Fp6TiA5ihNKMhzn4Byd/d3zikeOjKulQNh4ghdpP3uCa5/lOdRZajKcxttjqQphY22fE+aDsawQcohWDk90Sui184j8fKUgcjfXfFt0YiD+xeikUF8y9vh5E3Rwzvqko=
+before_install:
+- npm install -g parcel-bundler
+install:
+- npm install
+script:
+- parcel build src/test.js
+deploy:
+  on:
+    tags: true
+  provider: firebase
+  skip_cleanup: true
+  token:
+    secure: mKNIGLrc37/0DKEDhOagO44FmYub5JF1iSbqRnxND16eiOnx8sTseMh9jODE8W8l0U9lNa4xNxs4XvoYOiIOq+Q8wjZLRb5ShUK9nmofVDzoWkJPZ6gSlcPFvgW/F7t9lzc2Widdl+pfI4oCFTVr8YjVaLLWdYYP9eitpoVkSGtrJlOu+6kbYXHqc4dX1LfyDWzrw8I4cFOSsuZ6p3wgoUqn6rTwpIenj9RacWGBdTqin4Zix2wSPBGi60k7WBWoiOflMJLmVtN3mZrdw7fQ+3R/TW7htRwGmKiI/YQ/s0Jws1sFztGsbQ8q42+urTVgrVsNaSwBGKZq36k9KKdtTMUL+ZBUIX9E0NMFne89eRAfzx9EgEPMpGPftMhN+hl6dj9WvmgYo9Jtk6gG1r2lKAuBvKFt5GWzfLb7kEzwO/rxjVoY5zVGUe2TaVhZtGbgwYJ47QDFB6nq8lUNyPKxkq81E8KaZyaLLz8R1x4I45OrJeoqXkzifndWQ7Zxmo5ED96DPSNekIKw54Vq+/geKxDMQ75O/hD4qXSesDs/8a1Fp6TiA5ihNKMhzn4Byd/d3zikeOjKulQNh4ghdpP3uCa5/lOdRZajKcxttjqQphY22fE+aDsawQcohWDk90Sui184j8fKUgcjfXfFt0YiD+xeikUF8y9vh5E3Rwzvqko=
+  project: exp-framework
