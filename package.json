@@ -2,7 +2,7 @@
   "name": "Exp",
   "version": "1.1.0",
   "description": "Lightweight framework designed for building banner in Exponea platform.",
-  "main": "src/Exp.js",
+  "main": "src/exp.js",
   "scripts": {
     "start": "parcel serve src/index.html",
     "build": "parcel build src/exp.js"
