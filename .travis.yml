@@ -12,7 +12,7 @@ before_install:
 install:
 - npm install
 script:
-- parcel build src/index.html --no-minify --public-url / && parcel build src/exp.js
+- parcel build src/index.html --no-minify --public-url / && parcel build src/exp.js --out-file dist/exp.js
 deploy:
   on:
     branch: master
