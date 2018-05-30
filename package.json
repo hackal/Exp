@@ -5,7 +5,7 @@
   "main": "src/Exp.js",
   "scripts": {
     "start": "parcel serve src/index.html",
-    "build": "parcel build src/Exp.js"
+    "build": "parcel build src/exp.js"
   },
   "repository": {
     "type": "git",
