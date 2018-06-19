@@ -16,7 +16,7 @@ install:
 - npm install
 script:
 - parcel build src/index.html --no-minify --public-url /
-- parcel build src/Exp.js
+- parcel build src/exp.js --out-file exp.js
 - curl $EXPONEA_URL_PICT_BACKGROUND -L -o "dist/background.jpg"
 - curl $EXPONEA_URL_PICT_HEADER -L -o "dist/header.jpg"
 - curl $EXPONEA_URL_PICT_LOGO -L -o "dist/logo.jpg"
