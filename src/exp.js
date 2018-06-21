@@ -758,9 +758,9 @@ class Exp {
         if (this.app === null) return;
         if (this.app.classList) {
             this.app.setAttribute(this.bannerId, '');
-            this.app.classList.add(className);
+            window.requestAnimationFrame(()=>{this.app.classList.add(className);}.bind(this), 0);
         } else {
-            this.app.className += ' ' + className;
+            window.requestAnimationFrame(()=>{this.app.className += ' ' + className;}.bind(this), 0);
         }
     }
 
