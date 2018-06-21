@@ -608,9 +608,9 @@ class Exp {
         const expIfs = this.select(`*[exp-if]`);
         expIfs.forEach(el => {
             const key = el.getAttribute('exp-if');
-            if (key in this.methods) {
+            if (typeof(this.model[key]) === "function") {
                 /* BUG: does not check the original display value, assumes block */
-                el.style.display = this.methods[key].call(this.model) ? "block" : "none";
+                el.style.display = this.model[key].call(this.model) ? "block" : "none";
             }
         });
     }
