@@ -168,11 +168,17 @@ class Exp {
                 /* Renders banner once page elements are loaded */
                 const delay = this.trigger.delay || 0;
                 var self = this;
-                window.addEventListener('load', function() {
+                if(document.readyState == 'complete'){
                     setTimeout(() => {
                         self.inject();
                     }, delay);
-                });
+                } else {
+                    window.addEventListener('load', function() {
+                        setTimeout(() => {
+                            self.inject();
+                        }, delay);
+                    });
+                }
                 return;
             } else if (this.trigger.type == "onexit") {
                 /* Renders banner if user wants to leave the page */
