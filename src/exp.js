@@ -297,6 +297,7 @@ class Exp {
                     self.updateModels(key, value);
                     self.updateIfs(key, value);
                     self.updateAttributes(key, value);
+                    self.updateIfsMethods();
                 }
             });
             self.model[key] = value;
@@ -605,6 +606,18 @@ class Exp {
         expIfs.forEach(el => {
             /* BUG: does not check the original display value, assumes block */
             el.style.display = (value ? "block" : "none");
+        });
+    }
+
+    /* Method for updating exp-ifs methods */
+    updateIfsMethods() {
+        const expIfs = this.select(`*[exp-if]`);
+        expIfs.forEach(el => {
+            const key = el.getAttribute('exp-if');
+            if (typeof(this.model[key]) === "function") {
+                /* BUG: does not check the original display value, assumes block */
+                el.style.display = this.model[key].call(this.model) ? "block" : "none";
+            }
         });
     }
 
