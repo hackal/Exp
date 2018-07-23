@@ -777,11 +777,11 @@ class Exp {
         if (this.app === null) return;
         if (this.app.classList) {
             this.app.setAttribute(this.bannerId, '');
-            window.requestAnimationFrame(function() {
+            setTimeout(function() {
                 this.app.classList.add(className);
             }.bind(this));
         } else {
-            window.requestAnimationFrame(function() {
+            setTimeout(function() {
                 this.app.className += ' ' + className;
             }.bind(this));
         }
