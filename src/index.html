@@ -106,14 +106,14 @@ return {
     Output:
     <div class="output">
         <div id="banner1">
-          <p exp-bind="message"></p>
+          <p exp-html="message"></p>
         </div>
     </div>
     <script>
       var banner = new Exp({
         el: "#banner1",
         data: {
-          message: "Hello world!",
+          message: "<h1>Hello world!</h1>",
         },
         branded: false
       })
