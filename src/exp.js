@@ -440,7 +440,7 @@ class Exp {
                     });
                 }
 
-                if (method === null || !(method in self.methods)) return;
+                if (method === null || !(self.methods.hasOwnProperty(method))) return;
                 el.addEventListener(event, function(e) {
                     self.methods[method].apply(self.model, [e]);
                 });
@@ -459,7 +459,7 @@ class Exp {
         elements.forEach(el => {
             supportedAttributes.forEach(attr => {
                 var val = el.getAttribute('exp-' + attr);
-                if (val === null || !(val in self.model)) return;
+                if (val === null || !(self.model.hasOwnProperty(val))) return;
                 /* Update value according to data in model */
                 el.setAttribute(attr, self.model[val]);
             })
@@ -532,7 +532,7 @@ class Exp {
                 parentElement: expFor.parentNode,
                 siblingElement: expFor.nextElementSibling
             };
-            if (arrayName in this.__storage.loopDefinitions) {
+            if (this.__storage.loopDefinitions.hasOwnProperty(arrayName)) {
                 /* Set siblingElement only if it exists and doesn't have exp-for */
                 const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
                 expForInstance.siblingElement = sibling;
@@ -572,7 +572,7 @@ class Exp {
                 /* Get formatter name */
                 const formatter = parsedAttributes[i].trim();
                 
-                if (formatter in this.formatters) {
+                if (this.formatters.hasOwnProperty(formatter)) {
                     /* Update intermediate value */
                     intermediateValue = this.formatters[formatter].call(this.model, intermediateValue);
                 }
@@ -652,7 +652,7 @@ class Exp {
         elements.forEach(el => {
             supportedAttributes.forEach(attr => {
                 var val = el.getAttribute('exp-' + attr);
-                if (val === null || !(val in that.model)) return;
+                if (val === null || !(that.model.hasOwnProperty(val))) return;
                 
                 el[attr] = that.model[val];
             })
