@@ -102,6 +102,7 @@ Exp framework is able to recognize the following set of HTML attributes and add 
 | Attribute         | Value       | Description | Example     |
 | ----------------- | ----------- | ----------- | ----------- |
 | `exp-bind`        | Variable    | Updating text real-time with the value of JavaScript variable (i.e. JavaScript -> HTML binding). | `<span exp-bind="product.name"></span>` |
+| `exp-html`        | Variable    | Updating html real-time with the value of JavaScript variable (i.e. JavaScript -> HTML binding). | `<span exp-html="product.name"></span>` |
 | `exp-model`       | Variable    | Updates the JavaScript variable value with the input value (i.e. HTML -> JavaScript binding). | `<input exp-model="email">` |
 | `exp-if`          | Variable    | Showing element if the value of the variable is true. | `<div exp-if="bonus_club">Discount 50%</div>` |
 | `exp-for`         | Iteration   | Copying HTML elements for every element in array and populating it with corresponding values. | `<div exp-for="product in products"><span exp-bind="product.title"></span></div>` |
