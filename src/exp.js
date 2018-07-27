@@ -124,6 +124,13 @@ class Exp {
                 }
             }
 
+            if (settings.sdk !== undefined) {
+                if (this.sentry.use && settings.sdk._) {
+                    this.RavenInstance.setTagsContext({ project_token: settings.sdk._[0][1][0].token });
+                }
+                return settings.sdk;
+            }
+
             return null;
         })();
         /* Exponea banner context */
