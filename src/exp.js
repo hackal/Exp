@@ -1,3 +1,7 @@
+import $anim from './helpers/anim.js'
+import $validateEmail from './helpers/validateEmail.js';
+import getScript from './helpers/getScript.js';
+
 /* Main class */
 class Exp {
     constructor(settings) {
@@ -32,7 +36,6 @@ class Exp {
         /* Add sentry script if necessary */
         if (this.sentry.use && typeof(Raven) === "undefined") { // Sentry SDK not present
             /* jQuery getScript polyfill */
-            const getScript = require('./helpers/getScript.js');
             getScript(RAVEN_CDN, _ => {
                 /* Configure sentry */
                 this.configureRaven(this.sentry.noConflict);
@@ -294,6 +297,7 @@ class Exp {
                 set(val) {
                     value = val;
                     self.updateBindings(key, value);
+                    self.updateHtml(key, value);
                     self.updateModels(key, value);
                     self.updateIfs(key, value);
                     self.updateAttributes(key, value);
@@ -311,8 +315,8 @@ class Exp {
         }
 
         /* Bind helper methods */
-        this.model.$anim = require('./helpers/anim.js');
-        this.model.$validateEmail = require('./helpers/validateEmail.js');
+        this.model.$anim = $anim;
+        this.model.$validateEmail = $validateEmail;
 
         /* Bind special methods to be used in `this` scope */
         this.model.removeBanner = this.removeBanner.bind(this, this.app);
@@ -582,6 +586,14 @@ class Exp {
             this.writeBindValue(value, el);
         });
     }
+    
+    /* Method for updating all exp-html */
+    updateHtml(key, value) {
+        const htmls = this.select(`*[exp-html^="${key}"]`);
+        htmls.forEach(el => {
+            el.innerHTML = value;
+        });
+    }
 
     /* Method for updating input exp-models */
     updateModels(key, value) {
@@ -651,7 +663,7 @@ class Exp {
             expFors = this.__storage.loopDefinitions[arrayName];
         }
         /* Iterate through all exp-for instances linked to targeted array */
-        for (expForInstance of expFors) {
+        for (let expForInstance of expFors) {
             /* Clone the template and populate it with element data */
             var template = expForInstance.template.cloneNode(true);
             let attrSelector = supportedAttributes.map(attr => {
