@@ -459,7 +459,7 @@ class Exp {
 
     /* Binds the close button with tracking and deleting functionality */
     bindClose() {
-        const selector = `[exp-close]`;
+        const selector = "[exp-close]";
         const elements = this.select(selector);
         elements.forEach(el => {
             el.addEventListener("click", (e) => {
@@ -476,7 +476,7 @@ class Exp {
 
     /* Bind exp-ifs */ 
     bindIfs() {
-        const expIfs = this.select(`[exp-if]`);
+        const expIfs = this.select("[exp-if]");
         expIfs.forEach(el => {
             /* BUG: does not check the original display value, assumes block */
             const attr = el.getAttribute("exp-if");
@@ -495,7 +495,7 @@ class Exp {
 
     /* Creates access to elements from model scope */
     bindRefs() {
-        const selecor = `[exp-ref]`;
+        const selecor = "[exp-ref]";
         const elements = this.select(selecor);
         elements.forEach(el => {
             const val = el.getAttribute("exp-ref");
@@ -507,7 +507,7 @@ class Exp {
 
     /* Instantiates and binds exp-for with model */
     bindFors() {
-        const expFors = this.select(`[exp-for], [exp-rcm]`);
+        const expFors = this.select("[exp-for], [exp-rcm]");
         expFors.forEach(expFor => {
             /* Tokenize and parse attribute */
             const attr = expFor.hasAttribute("exp-for") ? "exp-for" : "exp-rcm";
@@ -865,8 +865,8 @@ class Exp {
     getUuid() {
         let firstPart = (Math.random() * 46656) | 0;
         let secondPart = (Math.random() * 46656) | 0;
-        firstPart = ("000" + firstPart.toString(36)).slice(-3);
-        secondPart = ("000" + secondPart.toString(36)).slice(-3);
+        firstPart = (`000${firstPart.toString(36)}`).slice(-3);
+        secondPart = (`000${secondPart.toString(36)}`).slice(-3);
         return firstPart + secondPart;
     }
     /* Add inline style to element */
