@@ -1,6 +1,6 @@
-import $anim from './helpers/anim.js'
-import $validateEmail from './helpers/validateEmail.js';
-import getScript from './helpers/getScript.js';
+import $anim from "./helpers/anim.js";
+import $validateEmail from "./helpers/validateEmail.js";
+import getScript from "./helpers/getScript.js";
 
 /* Main class */
 class Exp {
@@ -9,15 +9,15 @@ class Exp {
         this.model = settings.data || {};
 
         this.RavenInstance = undefined;
-        const RAVEN_CDN = 'https://cdn.ravenjs.com/3.24.2/raven.min.js';
-        
+        const RAVEN_CDN = "https://cdn.ravenjs.com/3.26.4/raven.min.js";
+
         /* Prepare sentry config */
         this.sentry = (_ => {
             /* Default config */
             let config = {
                 use: false,
                 noConflict: true,
-                project: '',
+                project: "",
                 options: {}
             };
             if (settings.sentry === undefined) {
@@ -32,7 +32,7 @@ class Exp {
 
             return config;
         })();
-        
+
         /* Add sentry script if necessary */
         if (this.sentry.use && typeof(Raven) === "undefined") { // Sentry SDK not present
             /* jQuery getScript polyfill */
@@ -43,8 +43,8 @@ class Exp {
                 /* Initialize banner in sentry context */
                 this.RavenInstance.context(function() {
                     this.initialize(settings);
-                }.bind(this))
-            })
+                }.bind(this));
+            });
         } else if (this.sentry.use) { // Sentry SDK already present
             /* Configure sentry */
             this.configureRaven(this.sentry.noConflict);
@@ -52,10 +52,10 @@ class Exp {
             /* Initialize banner in sentry context */
             this.RavenInstance.context(function() {
                 this.initialize(settings);
-            }.bind(this))
+            }.bind(this));
         } else {
             /* initialize banner without sentry */
-            this.initialize(settings)
+            this.initialize(settings);
         }
         
         return this.model;
@@ -79,7 +79,7 @@ class Exp {
         this.app = null;
 
         /* Generate Id for banner */
-        this.bannerId = 'e-' + this.getUuid();
+        this.bannerId = `e-${this.getUuid()}`;
         /* Dictionaries describing recommendations */
         this.recommendations = settings.recommendations || {};
 
@@ -93,7 +93,7 @@ class Exp {
         this.branded = (_ => {
             if (settings.branded === undefined) return false;
             if (settings.branded !== "black" && settings.branded !== "white") return false;
-            else return settings.branded
+            else return settings.branded;
         })();
 
         /* Look for either explicit code or for HTML code in context */
@@ -167,28 +167,27 @@ class Exp {
         
         /* If trigger exists, inject into DOM based on the type of the trigger */
         if (this.trigger !== null && !this.inPreview) {
-            if (this.trigger.type == "onready") {
+            var self = this;
+            if (this.trigger.type === "onready") {
                 /* Renders banner once page elements are loaded */
                 const delay = this.trigger.delay || 0;
-                var self = this;
-                if(document.readyState == 'complete'){
+                if (document.readyState === "complete") {
                     setTimeout(() => {
                         self.inject();
                     }, delay);
                 } else {
-                    window.addEventListener('load', function() {
+                    window.addEventListener("load", function() {
                         setTimeout(() => {
                             self.inject();
                         }, delay);
                     });
                 }
                 return;
-            } else if (this.trigger.type == "onexit") {
+            } else if (this.trigger.type === "onexit") {
                 /* Renders banner if user wants to leave the page */
                 const delay = this.trigger.delay || 0;
                 window.__exp_triggered = false;
-                var self = this;
-                document.body.addEventListener("mouseleave", function (e) {
+                document.body.addEventListener("mouseleave", function(e) {
                     /* Check window was left */
                     if (e.offsetY - window.scrollY < 0 && !window.__exp_triggered) {
                         window.__exp_triggered = true;
@@ -198,9 +197,8 @@ class Exp {
                     }
                 });
                 return;
-            } else if (this.trigger.type = "onaction") {
+            } else if (this.trigger.type === "onaction") {
                 /* Renders banner on specific user action */
-                var self = this;
                 var action = this.trigger.action || "click";
                 const delay = this.trigger.delay || 0;
                 if (this.trigger.element) {
@@ -208,8 +206,8 @@ class Exp {
                         setTimeout(() => {
                             self.inject(self);
                         }, delay);
-                        self.trigger.element.removeEventListener(action, callback, false)
-                    }
+                        self.trigger.element.removeEventListener(action, callback, false);
+                    };
                     this.trigger.element.addEventListener(action, callback);
                 }
                 return;
@@ -232,10 +230,10 @@ class Exp {
             /* Try to extrack users exponea cookie, instance specific */
             if (this.RavenInstance.isSetup()) {
                 var exp_cookie = false;
-                document.cookie.split(/\s*;\s*/).forEach(function(val) {var [k,v]=val.split(/=/);if(k=='__exponea_etc__') exp_cookie = decodeURIComponent(v);});
+                document.cookie.split(/\s*;\s*/).forEach(function(val) {var [k,v]=val.split(/=/);if(k=="__exponea_etc__") exp_cookie = decodeURIComponent(v);});
                 if (exp_cookie) {
                     this.RavenInstance.setUserContext( { exponea_cookie: exp_cookie } );
-                };
+                }
             }
         } else {
             this.RavenInstance = Raven;
@@ -261,10 +259,10 @@ class Exp {
         this.bindAttributes();
         this.bindClose();
         this.bindFors();
-        this.bindIfs()
+        this.bindIfs();
 
         /* Load recommendations */
-        this.loadRecommendations()
+        this.loadRecommendations();
 
         /* Renders optional objects alongside with banners */
         if (this.backdrop !== null) this.addBackdrop();
@@ -274,7 +272,7 @@ class Exp {
 
         /* Track show if tracking is set to true  */
         if (this.tracking && this.sdk !== null && this.context !== null) {
-            this.sdk.track('banner', this.getEventProperties('show', false));
+            this.sdk.track("banner", this.getEventProperties("show", false));
         }
 
         /* Call mounted function if set */
@@ -331,7 +329,7 @@ class Exp {
         /* Otherwise check for HTML code which would be created and injected into DOM */
         } else if (this.html !== null) {
             /* Insert HTML to page */
-            let el = document.createElement('div');
+            let el = document.createElement("div");
             el.innerHTML = this.html.trim();
             /* Append the element to target or to body */
             if (this.insert !== null) {
@@ -359,11 +357,11 @@ class Exp {
                     if (rule instanceof CSSMediaRule) {
                         let conditionText;
                         if (!rule.conditionText) {
-                            conditionText = '';
-                            let condTxtArr = Object.keys(rule.media).map(function (objectKey, index) {
+                            conditionText = "";
+                            let condTxtArr = Object.keys(rule.media).map(function(objectKey) {
                                 return rule.media[objectKey];
                             });
-                            conditionText = condTxtArr.join(', ');
+                            conditionText = condTxtArr.join(", ");
                         } else {
                             conditionText = rule.conditionText;
                         }
@@ -371,7 +369,7 @@ class Exp {
                         this.listify(rule.cssRules).forEach(rule => {
                             scopedStyle = scopedStyle + this.generateScopedRule(rule);
                         });
-                        scopedStyle = scopedStyle + `}`;
+                        scopedStyle = `${scopedStyle}}`;
                     }
                 });
                 /* Remove original style */
@@ -423,17 +421,17 @@ class Exp {
         var events = this.select(selector.join(), template);
         events.forEach(el => {
             supportedEvents.forEach(event => {
-                var method = el.getAttribute('exp-' + event);
+                var method = el.getAttribute(`exp-${event}`);
                 /* If exp-action is declared then add appropriate EventListener */
-                if (event == 'action') {
-                    el.addEventListener('click', function(e) {
+                if (event === "action") {
+                    el.addEventListener("click", function(e) {
                         if (this.tracking && this.sdk !== null && this.context !== null) {
-                            this.sdk.track('banner', this.getEventProperties('click'));
+                            this.sdk.track("banner", this.getEventProperties("click"));
                         }
                     });
                 }
 
-                if (method === null || !(method in self.methods)) return;
+                if (method === null || !(self.methods.hasOwnProperty(method))) return;
                 el.addEventListener(event, function(e) {
                     self.methods[method].apply(self.model, [e]);
                 });
@@ -451,11 +449,11 @@ class Exp {
         const elements = this.select(selector.join());
         elements.forEach(el => {
             supportedAttributes.forEach(attr => {
-                var val = el.getAttribute('exp-' + attr);
-                if (val === null || !(val in self.model)) return;
+                var val = el.getAttribute(`exp-${attr}`);
+                if (val === null || !(self.model.hasOwnProperty(val))) return;
                 /* Update value according to data in model */
                 el.setAttribute(attr, self.model[val]);
-            })
+            });
         })
     }
 
@@ -464,13 +462,13 @@ class Exp {
         let selector = `[exp-close]`;
         var elements = this.select(selector);
         elements.forEach(el => {
-            el.addEventListener('click', (e) => {
+            el.addEventListener("click", (e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 this.removeBanner();
                 /* Track 'close' if tracking is set to true */
                 if (this.tracking && this.sdk !== null && this.context !== null) {
-                    this.sdk.track('banner', this.getEventProperties('close'));
+                    this.sdk.track("banner", this.getEventProperties("close"));
                 }
             });
         })
@@ -483,7 +481,7 @@ class Exp {
             /* BUG: does not check the original display value, assumes block */
             const attr = el.getAttribute("exp-if");
             if (this.model[attr] !== null && this.model[attr] !== undefined) {
-                if (typeof(this.model[attr]) == "function") {
+                if (typeof(this.model[attr]) === "function") {
                     el.style.display = this.model[attr].call(this.model) ? "block" : "none";
                 } else {
                     el.style.display = this.model[attr] ? "block" : "none";
@@ -500,8 +498,8 @@ class Exp {
         let selecor = `[exp-ref]`;
         var elements = this.select(selecor);
         elements.forEach(el => {
-            let val = el.getAttribute('exp-ref');
-            if (val && val !== '') {
+            let val = el.getAttribute("exp-ref");
+            if (val && val !== "") {
                 this.model.$refs[val] = el
             }
         });
@@ -512,10 +510,9 @@ class Exp {
         const expFors = this.select(`[exp-for], [exp-rcm]`);
         expFors.forEach(expFor => {
             /* Tokenize and parse attribute */
-            let attr = expFor.hasAttribute('exp-for') ? 'exp-for' : 'exp-rcm';
-            let key = expFor.getAttribute(attr).split(' ')[0];
-            let arrayName = expFor.getAttribute(attr).split(' ')[2];
-            let hash = 'e-' + this.getUuid();
+            let attr = expFor.hasAttribute("exp-for") ? "exp-for" : "exp-rcm";
+            let key = expFor.getAttribute(attr).split(" ")[0];
+            let arrayName = expFor.getAttribute(attr).split(" ")[2];
             let template = expFor.cloneNode(true);
             /* Delete exp-for attribute */
             template.removeAttribute("exp-for");
@@ -525,14 +522,14 @@ class Exp {
                 parentElement: expFor.parentNode,
                 siblingElement: expFor.nextElementSibling
             };
-            if (arrayName in this.__storage.loopDefinitions) {
+            if (this.__storage.loopDefinitions.hasOwnProperty(arrayName)) {
                 /* Set siblingElement only if it exists and doesn't have exp-for */
-                const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
+                const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute("exp-for") !== null) ? null : expFor.nextElementSibling;
                 expForInstance.siblingElement = sibling;
                 this.__storage.loopDefinitions[arrayName].push(expForInstance);
             } else {
                 /* Set siblingElement only if it exists and doesn't have exp-for */
-                const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute('exp-for') !== null) ? null : expFor.nextElementSibling;
+                const sibling = (expFor.nextElementSibling !== null && expFor.nextElementSibling.getAttribute("exp-for") !== null) ? null : expFor.nextElementSibling;
                 expForInstance.siblingElement = sibling;
                 this.__storage.loopDefinitions[arrayName] = [expForInstance];
             };
@@ -553,7 +550,7 @@ class Exp {
 
     /* Execute formatters on exp-bind */
     writeBindValue(value, el) {
-        const parsedAttributes = el.getAttribute('exp-bind').split('|');
+        const parsedAttributes = el.getAttribute("exp-bind").split("|");
         
         /* Has formatters */
         if (parsedAttributes.length > 1) {
@@ -565,7 +562,7 @@ class Exp {
                 /* Get formatter name */
                 const formatter = parsedAttributes[i].trim();
                 
-                if (formatter in this.formatters) {
+                if (this.formatters.hasOwnProperty(formatter)) {
                     /* Update intermediate value */
                     intermediateValue = this.formatters[formatter].call(this.model, intermediateValue);
                 }
@@ -602,10 +599,10 @@ class Exp {
             const model = input.getAttribute("exp-model");
             const type = input.getAttribute("type");
             /* Handle different input types */
-            if (type == "checkbox") {
+            if (type === "checkbox") {
                 input.checked = !!value;
-            } else if (type == "radio") {
-                if (input.value == value) input.checked = true;
+            } else if (type === "radio") {
+                if (input.value === value) input.checked = true;
             } else {
                 input.value = value;
             }
@@ -623,9 +620,9 @@ class Exp {
 
     /* Method for updating exp-ifs methods */
     updateIfsMethods() {
-        const expIfs = this.select(`*[exp-if]`);
+        const expIfs = this.select("*[exp-if]");
         expIfs.forEach(el => {
-            const key = el.getAttribute('exp-if');
+            const key = el.getAttribute("exp-if");
             if (typeof(this.model[key]) === "function") {
                 /* BUG: does not check the original display value, assumes block */
                 el.style.display = this.model[key].call(this.model) ? "block" : "none";
@@ -644,8 +641,8 @@ class Exp {
 
         elements.forEach(el => {
             supportedAttributes.forEach(attr => {
-                var val = el.getAttribute('exp-' + attr);
-                if (val === null || !(val in that.model)) return;
+                var val = el.getAttribute(`exp-${attr}`);
+                if (val === null || !(that.model.hasOwnProperty(val))) return;
                 
                 el[attr] = that.model[val];
             })
@@ -670,16 +667,16 @@ class Exp {
                 return `*[exp-${attr}]`;
             });
             const expAttrs = this.select(attrSelector.join(), template);
-            const expBinds = this.select(`[exp-bind]`, template);
+            const expBinds = this.select("[exp-bind]", template);
             /* Override attributes of the node */
             expAttrs.forEach(el => {
                 supportedAttributes.forEach(attr => {
-                    const val = el.getAttribute('exp-' + attr);
+                    const val = el.getAttribute(`exp-${attr}`);
                     if (val === null) return;
-                    if (val.indexOf('.') == -1) {
+                    if (val.indexOf(".") === -1) {
                         el[attr] = item;
                     } else {
-                        const keys = val.split('.');
+                        const keys = val.split(".");
                         const value = this.findLastField(keys.slice(1), item);
                         el[attr] = value;
                     };
@@ -687,11 +684,11 @@ class Exp {
             });
             /* Override inner value of the node */
             expBinds.forEach(el => {
-                const val = el.getAttribute('exp-bind');
-                if (val.indexOf('.') == -1) {
+                const val = el.getAttribute("exp-bind");
+                if (val.indexOf(".") === -1) {
                     this.writeBindValue(item, el);
                 } else {
-                    const keys = val.split('.');
+                    const keys = val.split(".");
                     var value = this.findLastField(keys.slice(1), item);
                     el.textContent = value
                 }
@@ -715,10 +712,10 @@ class Exp {
     }
 
     /* Method for inserting stylesheet */
-    addStyle(css, disabled = false){
+    addStyle(css, disabled = false) {
         if (this.app === null) return;
-        var style = document.createElement('style');
-        style.type= 'text/css';
+        var style = document.createElement("style");
+        style.type= "text/css";
         style.appendChild(document.createTextNode(css)); /* BUG: Does not work in IE8 or less */
         var inserted = this.app.appendChild(style);
         inserted.sheet.disabled = disabled;
@@ -727,7 +724,7 @@ class Exp {
 
     /* Method for adding unique ID to CSS selectors */
     generateScopedRule(rule) {
-        let selectors = rule.selectorText.split(',');
+        let selectors = rule.selectorText.split(",");
         let selectorsText = selectors.map(selector => {
             let attr = `exp-${this.getUuid()}`;
             this.addAttributes(selector.trim(), attr);
@@ -744,7 +741,7 @@ class Exp {
 
     /* Handle backdrop option */
     addBackdrop() {
-        if (this.app == null) return;
+        if (this.app === null) return;
         /* Set default backdrop style */
         let backdropStyle = { 
             "position": "fixed",
@@ -760,13 +757,13 @@ class Exp {
             backdropStyle[key] = this.backdrop[key];
         }
         /* Inject element into DOM */
-        let backdrop = document.createElement('div');
+        let backdrop = document.createElement("div");
         this.setStyleFromObject(backdropStyle, backdrop);
-        this.app.parentNode.style['position'] = "relative";
+        this.app.parentNode.style.position = "relative";
         this.app.style["z-index"] = "9999999";
         this.backdrop = this.app.parentNode.appendChild(backdrop);
         /* Add event listener which removes banner on click */
-        this.backdrop.addEventListener('click', (e) => {
+        this.backdrop.addEventListener("click", (e) => {
             e.stopPropagation();
             e.preventDefault();
             this.removeBanner();
@@ -776,11 +773,11 @@ class Exp {
     /* Adds Powered by Exponea branding */
     addBranding() {
         if (this.app === null) return;
-        var branding = document.createElement('object');
+        var branding = document.createElement("object");
         var uuid = this.getUuid();
-        branding.setAttribute(`e${uuid}`, '')
+        branding.setAttribute(`e${uuid}`, "")
         this.addStyle(`[e${uuid}]{font-size:11px;position:absolute;opacity:.6;right:5px;bottom:5px;padding-top:0;text-decoration:none;display:block}[e${uuid}]:hover{opacity:.9}[e${uuid}] a{color: ${this.branded}}`);
-        branding.innerHTML = '<a href="https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral" target="_blank">Powered by Exponea</a>';
+        branding.innerHTML = "<a href=\"https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral\" target=\"_blank\">Powered by Exponea</a>";
         this.app.appendChild(branding);
     }
 
@@ -788,13 +785,13 @@ class Exp {
     addAnimationClass(className = "exponea-animate") {
         if (this.app === null) return;
         if (this.app.classList) {
-            this.app.setAttribute(this.bannerId, '');
+            this.app.setAttribute(this.bannerId, "");
             setTimeout(function() {
                 this.app.classList.add(className);
             }.bind(this));
         } else {
             setTimeout(function() {
-                this.app.className += ' ' + className;
+                this.app.className += ` ${className}`;
             }.bind(this));
         }
     }
@@ -874,7 +871,7 @@ class Exp {
     }
     /* Add inline style to element */
     setStyleFromObject(object, el) {
-        for (var property in object) {
+        for (let property in object) {
             el.style[property] = object[property];
         }
     }
@@ -895,7 +892,7 @@ class Exp {
     }
     /* Helper method for finding nested fields in nested dictionaries */
     findLastField(items, dict) {
-        if (items.length == 1) return dict[items[0]];
+        if (items.length === 1) return dict[items[0]];
         else return rec(items.slice(1), dict[items[0]]);
     }
 }
