@@ -14,7 +14,7 @@ class Exp {
         /* Prepare sentry config */
         this.sentry = (_ => {
             /* Default config */
-            let config = {
+            const config = {
                 use: false,
                 noConflict: true,
                 project: "",
@@ -167,7 +167,7 @@ class Exp {
         
         /* If trigger exists, inject into DOM based on the type of the trigger */
         if (this.trigger !== null && !this.inPreview) {
-            var self = this;
+            const self = this;
             if (this.trigger.type === "onready") {
                 /* Renders banner once page elements are loaded */
                 const delay = this.trigger.delay || 0;
@@ -199,7 +199,7 @@ class Exp {
                 return;
             } else if (this.trigger.type === "onaction") {
                 /* Renders banner on specific user action */
-                var action = this.trigger.action || "click";
+                const action = this.trigger.action || "click";
                 const delay = this.trigger.delay || 0;
                 if (this.trigger.element) {
                     const callback = function() {
@@ -229,8 +229,8 @@ class Exp {
             
             /* Try to extrack users exponea cookie, instance specific */
             if (this.RavenInstance.isSetup()) {
-                var exp_cookie = false;
-                document.cookie.split(/\s*;\s*/).forEach(function(val) {var [k,v]=val.split(/=/);if(k=="__exponea_etc__") exp_cookie = decodeURIComponent(v);});
+                let exp_cookie = false;
+                document.cookie.split(/\s*;\s*/).forEach(function(val) {const [k,v]=val.split(/=/);if(k=="__exponea_etc__") exp_cookie = decodeURIComponent(v);});
                 if (exp_cookie) {
                     this.RavenInstance.setUserContext( { exponea_cookie: exp_cookie } );
                 }
@@ -283,9 +283,9 @@ class Exp {
 
     /* Initalize model from data */
     initializeModel(data) {
-        var self = this;
+        const self = this;
         Object.keys(data).forEach(key => {
-            var value = data[key];
+            let value = data[key];
             /* Define new setters to update model on change */
             Object.defineProperty(self.model, key, {
                 enumerable: true,
@@ -307,7 +307,7 @@ class Exp {
 
         /* Copy methods from this.methods to this.model scope so it can be accessed with `this` */
         if (this.methods !== null) {
-            for (var key of Object.keys(this.methods)) {
+            for (let key of Object.keys(this.methods)) {
                 this.model[key] = this.methods[key];
             }
         }
@@ -329,7 +329,7 @@ class Exp {
         /* Otherwise check for HTML code which would be created and injected into DOM */
         } else if (this.html !== null) {
             /* Insert HTML to page */
-            let el = document.createElement("div");
+            const el = document.createElement("div");
             el.innerHTML = this.html.trim();
             /* Append the element to target or to body */
             if (this.insert !== null) {
@@ -344,9 +344,9 @@ class Exp {
         if (this.style !== null) {
             if (this.scoped) {
                 /* Quickly add style which is disabled, rename it and remove it */
-                let style = this.addStyle(this.style, true);
-                let rules = this.listify(style.sheet.cssRules);
-                var scopedStyle = "";
+                const style = this.addStyle(this.style, true);
+                const rules = this.listify(style.sheet.cssRules);
+                let scopedStyle = "";
                 /* Iterate over CSS rules */
                 rules.forEach(rule => {
                     /* Check rule is instances of CSSStyleRule */
@@ -358,7 +358,7 @@ class Exp {
                         let conditionText;
                         if (!rule.conditionText) {
                             conditionText = "";
-                            let condTxtArr = Object.keys(rule.media).map(function(objectKey) {
+                            const condTxtArr = Object.keys(rule.media).map(function(objectKey) {
                                 return rule.media[objectKey];
                             });
                             conditionText = condTxtArr.join(", ");
@@ -385,12 +385,12 @@ class Exp {
 
     /* Initial binding of input models */
     bindModels() {
-        let selector = ["email", "number", "search", "tel", "text", "url", "checkbox", "radio"].map(input => {
+        const selector = ["email", "number", "search", "tel", "text", "url", "checkbox", "radio"].map(input => {
             return `input[type="${input}"][exp-model]`;
-        });
-        selector = selector.concat(["textarea[exp-model]", "select[exp-model]"]);
+        }).concat(["textarea[exp-model]", "select[exp-model]"]);
+
         /* Find all input elements */
-        var inputs = this.select(selector.join());
+        const inputs = this.select(selector.join());
         inputs.forEach(input => {
             const model = input.getAttribute("exp-model");
             const type = input.getAttribute("type");
@@ -413,15 +413,15 @@ class Exp {
 
     /* Initial bindings of methods */
     bindMethods(template = undefined) {
-        var self = this;
-        let supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave", "action"];
-        let selector = supportedEvents.map(event => {
+        const self = this;
+        const supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave", "action"];
+        const selector = supportedEvents.map(event => {
             return `*[exp-${event}]`;
         });
-        var events = this.select(selector.join(), template);
+        const events = this.select(selector.join(), template);
         events.forEach(el => {
             supportedEvents.forEach(event => {
-                var method = el.getAttribute(`exp-${event}`);
+                const method = el.getAttribute(`exp-${event}`);
                 /* If exp-action is declared then add appropriate EventListener */
                 if (event === "action") {
                     el.addEventListener("click", function(e) {
@@ -443,13 +443,13 @@ class Exp {
     bindAttributes() {
         const self = this;
         const supportedAttributes = ["src", "href", "alt", "title", "disabled"];
-        let selector = supportedAttributes.map(attr => {
+        const selector = supportedAttributes.map(attr => {
             return `*[exp-${attr}]`;
         });
         const elements = this.select(selector.join());
         elements.forEach(el => {
             supportedAttributes.forEach(attr => {
-                var val = el.getAttribute(`exp-${attr}`);
+                const val = el.getAttribute(`exp-${attr}`);
                 if (val === null || !(self.model.hasOwnProperty(val))) return;
                 /* Update value according to data in model */
                 el.setAttribute(attr, self.model[val]);
@@ -459,8 +459,8 @@ class Exp {
 
     /* Binds the close button with tracking and deleting functionality */
     bindClose() {
-        let selector = `[exp-close]`;
-        var elements = this.select(selector);
+        const selector = `[exp-close]`;
+        const elements = this.select(selector);
         elements.forEach(el => {
             el.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -495,10 +495,10 @@ class Exp {
 
     /* Creates access to elements from model scope */
     bindRefs() {
-        let selecor = `[exp-ref]`;
-        var elements = this.select(selecor);
+        const selecor = `[exp-ref]`;
+        const elements = this.select(selecor);
         elements.forEach(el => {
-            let val = el.getAttribute("exp-ref");
+            const val = el.getAttribute("exp-ref");
             if (val && val !== "") {
                 this.model.$refs[val] = el
             }
@@ -510,14 +510,14 @@ class Exp {
         const expFors = this.select(`[exp-for], [exp-rcm]`);
         expFors.forEach(expFor => {
             /* Tokenize and parse attribute */
-            let attr = expFor.hasAttribute("exp-for") ? "exp-for" : "exp-rcm";
-            let key = expFor.getAttribute(attr).split(" ")[0];
-            let arrayName = expFor.getAttribute(attr).split(" ")[2];
-            let template = expFor.cloneNode(true);
+            const attr = expFor.hasAttribute("exp-for") ? "exp-for" : "exp-rcm";
+            const key = expFor.getAttribute(attr).split(" ")[0];
+            const arrayName = expFor.getAttribute(attr).split(" ")[2];
+            const template = expFor.cloneNode(true);
             /* Delete exp-for attribute */
             template.removeAttribute("exp-for");
             /* Copy template into storage, with the root element */
-            let expForInstance = {
+            const expForInstance = {
                 template: template,
                 parentElement: expFor.parentNode,
                 siblingElement: expFor.nextElementSibling
@@ -633,7 +633,7 @@ class Exp {
     /* Method for updating attributes */
     updateAttributes(key, value) {
         const supportedAttributes = ["src", "href", "alt", "title", "disabled"];
-        let selector = supportedAttributes.map(attr => {
+        const selector = supportedAttributes.map(attr => {
             return `*[exp-${attr}="${key}"]`;
         });
         const that = this;
@@ -641,7 +641,7 @@ class Exp {
 
         elements.forEach(el => {
             supportedAttributes.forEach(attr => {
-                var val = el.getAttribute(`exp-${attr}`);
+                const val = el.getAttribute(`exp-${attr}`);
                 if (val === null || !(that.model.hasOwnProperty(val))) return;
                 
                 el[attr] = that.model[val];
@@ -653,7 +653,7 @@ class Exp {
     /* Renders a new element of an array */
     renderNewElement(arrayName, key, item, expFor = null) {
         const supportedAttributes = ["src", "href", "alt"];
-        var expFors;
+        let expFors;
         if (expFor !== null) {
             expFors = [expFor];
         } else {
@@ -662,8 +662,8 @@ class Exp {
         /* Iterate through all exp-for instances linked to targeted array */
         for (let expForInstance of expFors) {
             /* Clone the template and populate it with element data */
-            var template = expForInstance.template.cloneNode(true);
-            let attrSelector = supportedAttributes.map(attr => {
+            const template = expForInstance.template.cloneNode(true);
+            const attrSelector = supportedAttributes.map(attr => {
                 return `*[exp-${attr}]`;
             });
             const expAttrs = this.select(attrSelector.join(), template);
@@ -689,7 +689,7 @@ class Exp {
                     this.writeBindValue(item, el);
                 } else {
                     const keys = val.split(".");
-                    var value = this.findLastField(keys.slice(1), item);
+                    const value = this.findLastField(keys.slice(1), item);
                     el.textContent = value
                 }
             });
@@ -700,9 +700,9 @@ class Exp {
 
     /* Override the push function with reactivity functionality */
     overridePush(array, arrayName, key) {
-        let self = this;
+        const self = this;
         array.push = (_ => {
-            var original = Array.prototype.push;
+            const original = Array.prototype.push;
             return function() {
                 const ret = original.apply(this, arguments);
                 self.renderNewElement(arrayName, key, arguments[0]);
@@ -714,19 +714,19 @@ class Exp {
     /* Method for inserting stylesheet */
     addStyle(css, disabled = false) {
         if (this.app === null) return;
-        var style = document.createElement("style");
+        const style = document.createElement("style");
         style.type= "text/css";
         style.appendChild(document.createTextNode(css)); /* BUG: Does not work in IE8 or less */
-        var inserted = this.app.appendChild(style);
+        const inserted = this.app.appendChild(style);
         inserted.sheet.disabled = disabled;
         return inserted;
     }
 
     /* Method for adding unique ID to CSS selectors */
     generateScopedRule(rule) {
-        let selectors = rule.selectorText.split(",");
-        let selectorsText = selectors.map(selector => {
-            let attr = `exp-${this.getUuid()}`;
+        const selectors = rule.selectorText.split(",");
+        const selectorsText = selectors.map(selector => {
+            const attr = `exp-${this.getUuid()}`;
             this.addAttributes(selector.trim(), attr);
             if (selector.includes(".exponea-animate")) {
                 return `${selector}[${this.bannerId}]`
@@ -743,7 +743,7 @@ class Exp {
     addBackdrop() {
         if (this.app === null) return;
         /* Set default backdrop style */
-        let backdropStyle = { 
+        const backdropStyle = { 
             "position": "fixed",
             "top": "0",
             "left": "0",
@@ -753,11 +753,11 @@ class Exp {
             "background": "rgba(0,0,0,0.7)"
         }
         /* Customize backdrop. If style=true then iterates over an empty array */
-        for (var key of Object.keys(this.backdrop)) {
+        for (let key of Object.keys(this.backdrop)) {
             backdropStyle[key] = this.backdrop[key];
         }
         /* Inject element into DOM */
-        let backdrop = document.createElement("div");
+        const backdrop = document.createElement("div");
         this.setStyleFromObject(backdropStyle, backdrop);
         this.app.parentNode.style.position = "relative";
         this.app.style["z-index"] = "9999999";
@@ -773,8 +773,8 @@ class Exp {
     /* Adds Powered by Exponea branding */
     addBranding() {
         if (this.app === null) return;
-        var branding = document.createElement("object");
-        var uuid = this.getUuid();
+        const branding = document.createElement("object");
+        const uuid = this.getUuid();
         branding.setAttribute(`e${uuid}`, "")
         this.addStyle(`[e${uuid}]{font-size:11px;position:absolute;opacity:.6;right:5px;bottom:5px;padding-top:0;text-decoration:none;display:block}[e${uuid}]:hover{opacity:.9}[e${uuid}] a{color: ${this.branded}}`);
         branding.innerHTML = "<a href=\"https://exponea.com/?utm_campaign=exponea-web-layer&amp;utm_medium=banner&amp;utm_source=referral\" target=\"_blank\">Powered by Exponea</a>";
@@ -802,7 +802,7 @@ class Exp {
             /* Has to already exist due to exp-for initialization */
             if (this.model[rcm]) {
                 /* Option parameters according to Exponea JS SDK */
-                var options = {
+                const options = {
                     recommendationId: this.recommendations[rcm].id,
                     size: this.recommendations[rcm].total,
                     callback: data => {
@@ -849,7 +849,7 @@ class Exp {
     /* Return array from querySelector */
     select(selector, scope = this.app) {
         if (scope === null) return []
-        var elements = this.listify(scope.querySelectorAll(selector));
+        const elements = this.listify(scope.querySelectorAll(selector));
         if (scope.matches(selector)) {
             elements.push(scope);
         }
@@ -863,8 +863,8 @@ class Exp {
     }
     /* Helper method for generating unique IDs, used by CSS scoping */
     getUuid() {
-        var firstPart = (Math.random() * 46656) | 0;
-        var secondPart = (Math.random() * 46656) | 0;
+        let firstPart = (Math.random() * 46656) | 0;
+        let secondPart = (Math.random() * 46656) | 0;
         firstPart = ("000" + firstPart.toString(36)).slice(-3);
         secondPart = ("000" + secondPart.toString(36)).slice(-3);
         return firstPart + secondPart;
