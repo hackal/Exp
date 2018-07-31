@@ -794,11 +794,11 @@ class Exp {
             this.app.setAttribute(this.bannerId, "");
             setTimeout(function() {
                 this.app.classList.add(className);
-            }.bind(this));
+            }.bind(this), 50);
         } else {
             setTimeout(function() {
                 this.app.className += ` ${className}`;
-            }.bind(this));
+            }.bind(this), 50);
         }
     }
 
