@@ -797,7 +797,7 @@ class Exp {
             }.bind(this), 50);
         } else {
             setTimeout(function() {
-                this.app.className += ' ' + className;
+                this.app.className += ` ${className}`;
             }.bind(this), 50);
         }
     }
