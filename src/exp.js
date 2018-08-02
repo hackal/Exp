@@ -430,7 +430,7 @@ class Exp {
                 const method = el.getAttribute(`exp-${event}`);
                 /* If exp-action is declared then add appropriate EventListener */
                 if (event === "action") {
-                    el.addEventListener("click", function(e) {
+                    el.addEventListener("click", (e) => {
                         if (this.tracking && this.sdk !== null && this.context !== null) {
                             this.sdk.track("banner", this.getEventProperties("click"));
                         }
