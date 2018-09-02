@@ -194,9 +194,13 @@ class Exp {
                 const delay = this.trigger.delay || 0;
                 // add unique global variable in case multiple onexit banner are in site
                 window[`__exp_triggered-${this.bannerId}`] = false;
-                document.body.addEventListener("mouseleave", (e) => {
-                    /* Check window was left */
-                    if (e.offsetY - window.scrollY < 0 && !window[`__exp_triggered-${this.bannerId}`]) {
+                document.body.addEventListener("mouseout", (e) => {
+                    e = e ? e : window.event;
+                    var vpWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+                    if (e.clientX >= (vpWidth - 50)) return;
+                    if (e.clientY >= 50) return;
+                    var from = e.relatedTarget || e.toElement;
+                    if(!from && !window[`__exp_triggered-${this.bannerId}`]) {
                         window[`__exp_triggered-${this.bannerId}`] = true;
                         setTimeout(() => {
                             self.inject(self);
