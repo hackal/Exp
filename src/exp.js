@@ -271,7 +271,13 @@ class Exp {
         this.loadRecommendations();
 
         /* Renders optional objects alongside with banners */
-        if (this.backdrop !== null) this.addBackdrop();
+        if (this.backdrop !== null) {
+            if (this.backdrop.disableClick !== undefined) {
+                this.addBackdrop(this.backdrop.disableClick);
+            } else {
+                this.addBackdrop();
+            }
+        }
         if (this.branded) this.addBranding();
         /* Adds exponea-animate class to app */
         this.addAnimationClass();
@@ -746,7 +752,7 @@ class Exp {
     }
 
     /* Handle backdrop option */
-    addBackdrop() {
+    addBackdrop(disableClick = false) {
         if (this.app === null) return;
         /* Set default backdrop style */
         const backdropStyle = { 
@@ -760,7 +766,9 @@ class Exp {
         }
         /* Customize backdrop. If style=true then iterates over an empty array */
         for (let key of Object.keys(this.backdrop)) {
-            backdropStyle[key] = this.backdrop[key];
+            if (key !== 'click') {
+                backdropStyle[key] = this.backdrop[key];
+            }
         }
         /* Inject element into DOM */
         const backdrop = document.createElement("div");
@@ -769,11 +777,18 @@ class Exp {
         this.app.style["z-index"] = "9999999";
         this.backdrop = this.app.parentNode.appendChild(backdrop);
         /* Add event listener which removes banner on click */
-        this.backdrop.addEventListener("click", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            this.removeBanner();
-        })
+        if (!disableClick) {
+            this.backdrop.addEventListener("click", (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                /* Track 'close' if tracking is set to true */
+                if (this.tracking && this.sdk !== null && this.context !== null) {
+                    this.sdk.track("banner", this.getEventProperties("close"));
+                }
+                this.removeBanner();
+            })
+        }
     }
 
     /* Adds Powered by Exponea branding */
