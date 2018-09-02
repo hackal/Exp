@@ -251,12 +251,14 @@ class Exp {
     /* Method for injecting the banner into DOM */
     inject() {
         /* For control group do not inject and only track show */
-        if (this.control_group) { /* TODO: How to check control_group from context */
+        if (this.control_group) {
             /* Track show if tracking is set to true  */
             if (this.tracking && this.sdk !== null && this.context !== null) {
                 this.sdk.track("banner", this.getEventProperties("show", false));
             }
 
+            /* return here to prevent injecting and other methods */
+            /* mounted is also not called */
             return this.model;
         }
 
