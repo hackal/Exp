@@ -766,7 +766,7 @@ class Exp {
         }
         /* Customize backdrop. If style=true then iterates over an empty array */
         for (let key of Object.keys(this.backdrop)) {
-            if (key !== 'click') {
+            if (key !== 'disableClick') {
                 backdropStyle[key] = this.backdrop[key];
             }
         }
@@ -781,7 +781,7 @@ class Exp {
             this.backdrop.addEventListener("click", (e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                
+
                 /* Track 'close' if tracking is set to true */
                 if (this.tracking && this.sdk !== null && this.context !== null) {
                     this.sdk.track("banner", this.getEventProperties("close"));
