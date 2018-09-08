@@ -75,7 +75,7 @@ class Exp {
         /* Formatters */
         this.formatters = settings.formatters || {};
         /* Control group */
-        this.control_group = settings.control_group || false
+        this.control_group = settings.control_group || false;
 
         /* Initialization of Exp app */
         this.app = null;
