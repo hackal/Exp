@@ -324,6 +324,8 @@ class Exp {
 
         /* Bind special methods to be used in `this` scope */
         this.model.removeBanner = this.removeBanner.bind(this, this.app);
+        this.model.getEventProperties = this.getEventProperties;
+        
         this.model.sdk = this.sdk;
     }
 
