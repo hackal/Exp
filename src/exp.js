@@ -332,6 +332,7 @@ class Exp {
         /* Bind helper methods */
         this.model.$anim = $anim;
         this.model.$validateEmail = $validateEmail;
+        this.model.$version = "v1.2.12";
 
         /* Bind special methods to be used in `this` scope */
         this.model.removeBanner = this.removeBanner.bind(this, this.app);
