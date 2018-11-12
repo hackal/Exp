@@ -7,7 +7,7 @@ class Exp {
     constructor(settings) {
         /* Initializing model */
         this.model = settings.data || {};
-
+        
         this.RavenInstance = undefined;
         const RAVEN_CDN = "https://cdn.ravenjs.com/3.26.4/raven.min.js";
 
@@ -271,6 +271,7 @@ class Exp {
         this.bindClose();
         this.bindFors();
         this.bindIfs();
+        this.bindRefs();
 
         /* Load recommendations */
         this.loadRecommendations();
@@ -332,6 +333,7 @@ class Exp {
         /* Bind helper methods */
         this.model.$anim = $anim;
         this.model.$validateEmail = $validateEmail;
+        this.model.$refs = {};
 
         /* Bind special methods to be used in `this` scope */
         this.model.removeBanner = this.removeBanner.bind(this, this.app);
