@@ -711,7 +711,7 @@ class Exp {
                 } else {
                     const keys = val.split(".");
                     const value = this.findLastField(keys.slice(1), item);
-                    el.textContent = value
+                    this.writeBindValue(value, el);
                 }
             });
             /* Append all children of the newly populated template */
