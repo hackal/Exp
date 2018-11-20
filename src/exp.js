@@ -74,6 +74,8 @@ class Exp {
         this.methods = settings.methods || {};
         /* Formatters */
         this.formatters = settings.formatters || {};
+        /* Control group */
+        this.control_group = settings.control_group || false;
 
         /* Initialization of Exp app */
         this.app = null;
@@ -254,8 +256,15 @@ class Exp {
     /* Method for injecting the banner into DOM */
     inject() {
         /* For control group do not inject and only track show */
-        if (false) { /* TODO: How to check control_group from context */
-            this.loaded();
+        if (this.control_group) {
+            /* Track show if tracking is set to true  */
+            if (this.tracking && this.sdk !== null && this.context !== null) {
+                this.sdk.track("banner", this.getEventProperties("show", false));
+            }
+
+            /* return here to prevent injecting and other methods */
+            /* mounted is also not called */
+            return this.model;
         }
 
         /* Render Exp banner */
@@ -294,7 +303,7 @@ class Exp {
         }
 
         /* Call mounted function if set */
-        if (this.mounted !== null && !this.control_group) this.mounted.call(this.model);
+        if (this.mounted !== null) this.mounted.call(this.model);
     
         return this.model;
     }
