@@ -698,6 +698,7 @@ class Exp {
             });
             const expAttrs = this.select(attrSelector.join(), template);
             const expBinds = this.select("[exp-bind]", template);
+            this.bindMethods(template);
             /* Override attributes of the node */
             expAttrs.forEach(el => {
                 supportedAttributes.forEach(attr => {
