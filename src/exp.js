@@ -846,6 +846,11 @@ class Exp {
                     recommendationId: this.recommendations[rcm].id,
                     size: this.recommendations[rcm].total,
                     callback: data => {
+                        /* Call custom callback */
+                        if (this.recommendations[rcm].callback !== undefined) {
+                            this.recommendations[rcm].callback.call(this, data);
+                        }
+
                         /* Push to model */
                         if (data && data.length > 0) {
                             data.forEach(item => {
