@@ -444,7 +444,7 @@ class Exp {
     /* Initial bindings of methods */
     bindMethods(template = undefined) {
         const self = this;
-        const supportedEvents = ["click", "submit", "input", "hover", "blur", "focus", "mouseenter", "mouseleave", "action"];
+        const supportedEvents = ["click", "submit", "change", "input", "hover", "blur", "focus", "mouseenter", "mouseleave", "action"];
         const selector = supportedEvents.map(event => {
             return `*[exp-${event}]`;
         });
