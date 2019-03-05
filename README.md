@@ -89,7 +89,7 @@ The `settings` object has the following available attributes
 | `control_group`   | Boolean     | Weblayer will not be shown, but tracking will run as for a custom control group. Default `false`. | `false` |
 | `mounted`         | Function    | A function that is called when the weblayer is loaded. | `function() { setTimeout(function() { this.ref.header.style.display = “none” }, 5000) }`
 | `trigger`         | Dictionary  | Specification of the trigger that activates the weblayer. | `{ type: "onready", delay: 1000 }` |
-| `backdrop`        | Dictionary or Boolean | CSS style for the backdrop for the weblayer. Default `false`. | `{ background: rgba(0, 0, 0, 0.5) }` |
+| `backdrop`        | Dictionary or Boolean | CSS style for the backdrop for the weblayer. Default `false`. | `{ background: :rgba(0, 0, 0, 0.5)" }` |
 | `branded`         | String or Boolean | Adding Exponea branding in the selected color. Default `false`. Available options: `"black"`, `"white"` and `false`. | `"white"` |
 | `recommendations` | Dictionary  | Definition of recommendation models used with the banner. | `{ rcm1: {id: "123", total: 4} }` |
 | `sentry`          | Dictionary  | Options settings for Sentry integration | `{use: true, project: ''}` |
